@@ -1,0 +1,52 @@
+const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema(
+    {
+        name: {
+            type: String,
+            required: [true, "Name is required"],
+            trim: true,
+            minlength: 2,
+            maxlength: 60,
+        },
+        email: {
+            type: String,
+            required: [true, "Email is required"],
+            unique: true,
+            lowercase: true,
+            trim: true,
+        },
+        phone: {
+            type: String,
+            trim: true,
+        },
+        passwordHash: {
+            type: String,
+            required: true,
+            select: false, // never send the password back in API responses
+        },
+        role: {
+            type: String,
+            enum: ["student", "admin"],
+            default: "student",
+        },
+        isEmailVerified: {
+            type: Boolean,
+            default: false,
+        },
+        status: {
+            type: String,
+            enum: ["active", "suspended"],
+            default: "active",
+        },
+        streak: {
+            current: { type: Number, default: 0 },
+            longest: { type: Number, default: 0 },
+            lastActiveDate: { type: Date },
+        },
+        lastLoginAt: { type: Date },
+    },
+    { timestamps: true } // adds createdAt and updatedAt automatically
+);
+
+module.exports = mongoose.model("User", userSchema);

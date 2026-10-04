@@ -1,0 +1,18 @@
+const mongoose = require("mongoose");
+const dns = require("dns");
+
+// Use Google and Cloudflare DNS, because some internet providers
+// block the lookup MongoDB Atlas needs (querySrv ECONNREFUSED)
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
+
+const connectDB = async () => {
+    try {
+        const conn = await mongoose.connect(process.env.MONGO_URI);
+        console.log(`MongoDB connected: ${conn.connection.host}`);
+    } catch (error) {
+        console.error("MongoDB connection failed:", error.message);
+        process.exit(1);
+    }
+};
+
+module.exports = connectDB;
