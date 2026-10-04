@@ -7,6 +7,7 @@ const adminRoutes = require("./routes/adminRoutes");
 const attemptRoutes = require("./routes/attemptRoutes");
 const progressRoutes = require("./routes/progressRoutes");
 const bookmarkRoutes = require("./routes/bookmarkRoutes");
+const testRoutes = require("./routes/testRoutes"); // NEW
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -27,6 +28,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/attempts", attemptRoutes);
 app.use("/api/progress", progressRoutes);
 app.use("/api/bookmarks", bookmarkRoutes);
+app.use("/api/tests", testRoutes); // NEW
 
 connectDB().then(() => {
     app.listen(PORT, () => {
