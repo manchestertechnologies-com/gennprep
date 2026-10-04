@@ -12,7 +12,7 @@ export default function Login() {
     const [submitting, setSubmitting] = useState(false);
 
     // Already logged in? Go straight to the dashboard
-    if (user) return <Navigate to="/dashboard" replace />;
+    if (user) return <Navigate to="/" replace />;
 
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -22,7 +22,7 @@ export default function Login() {
         setSubmitting(true);
         try {
             await login(form.email, form.password);
-            navigate("/dashboard");
+            navigate("/");
         } catch (err) {
             setError(getErrorMessage(err));
         } finally {
