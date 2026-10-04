@@ -1,76 +1,122 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api, { getErrorMessage } from "../../api/axios";
+import QuestionView from "../../components/QuestionView";
+import QuestionPalette from "../../components/QuestionPalette";
 
-// 125 -> "02:05"
+const pad = (n) => String(n).padStart(2, "0");
 const formatClock = (seconds) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    const s = Math.max(0, seconds);
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    return h ? `${h}:${pad(m)}:${pad(s % 60)}` : `${pad(m)}:${pad(s % 60)}`;
 };
 
-const DIFFICULTY_STYLES = {
-    easy: "bg-green-50 text-green-700",
-    medium: "bg-amber-50 text-amber-700",
-    hard: "bg-red-50 text-red-700",
-};
+// Answers in the shape the server expects
+const buildPayload = (questions, answers, marked, times) =>
+    questions.map((q) => ({
+        questionId: q._id,
+        selectedOptionIds: answers[q._id] || [],
+        markedForReview: Boolean(marked[q._id]),
+        timeSpentSec: times[q._id] || 0,
+    }));
+
+const SAVE_TEXT = { saving: "Saving...", saved: "All answers saved", error: "Not saved yet, retrying" };
 
 export default function TestScreen() {
-    const { id } = useParams(); // the attempt id from the URL
+    const { id } = useParams();
     const navigate = useNavigate();
     const storageKey = `attempt-${id}`;
 
+    const [info, setInfo] = useState(null);
     const [questions, setQuestions] = useState([]);
-    const [markingScheme, setMarkingScheme] = useState(null);
     const [current, setCurrent] = useState(0);
-    const [answers, setAnswers] = useState({}); // questionId -> ["B"]
-    const [times, setTimes] = useState({}); // questionId -> seconds spent
-    const [elapsed, setElapsed] = useState(0);
+    const [answers, setAnswers] = useState({});
+    const [marked, setMarked] = useState({});
+    const [times, setTimes] = useState({});
+    const [openedAt] = useState(() => Date.now());
+    const [now, setNow] = useState(() => Date.now());
+    const [clockOffset, setClockOffset] = useState(0); // server clock minus computer clock
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [saveState, setSaveState] = useState("");
     const [error, setError] = useState("");
 
     const startedAt = useRef(Date.now()); // when the current question was opened
+    const dirty = useRef(false); // something changed since the last autosave
+    const submitted = useRef(false);
+    const latest = useRef({ questions: [], answers: {}, marked: {}, times: {} });
 
-    // 1. Load the questions (without answers)
+    // 1. Load the attempt and restore saved answers (server first, then this browser's copy)
     useEffect(() => {
         api
             .get(`/attempts/${id}`)
             .then((res) => {
-                // Already submitted? Show the result instead
-                if (res.data.status !== "in_progress") {
+                const d = res.data;
+                if (d.status !== "in_progress") {
                     navigate(`/result/${id}`, { replace: true });
                     return;
                 }
-                setQuestions(res.data.questions);
-                setMarkingScheme(res.data.markingScheme);
+                setInfo({ mode: d.mode, title: d.testTitle || "Practice", markingScheme: d.markingScheme, expiresAt: d.expiresAt });
+                setQuestions(d.questions);
+                if (d.expiresAt) setClockOffset(new Date(d.serverNow).getTime() - Date.now());
 
-                // Restore answers if the page was refreshed
-                const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
-                if (saved) {
-                    setAnswers(saved.answers || {});
-                    setTimes(saved.times || {});
-                }
+                const a = {};
+                const m = {};
+                const t = {};
+                (d.savedAnswers || []).forEach((s) => {
+                    if (s.selectedOptionIds?.length) a[s.questionId] = s.selectedOptionIds;
+                    if (s.markedForReview) m[s.questionId] = true;
+                    if (s.timeSpentSec) t[s.questionId] = s.timeSpentSec;
+                });
+                const local = JSON.parse(localStorage.getItem(storageKey) || "null");
+                setAnswers({ ...a, ...local?.answers });
+                setMarked({ ...m, ...local?.marked });
+                setTimes({ ...t, ...local?.times });
                 startedAt.current = Date.now();
             })
             .catch((err) => setError(getErrorMessage(err)))
             .finally(() => setLoading(false));
     }, [id, navigate, storageKey]);
 
-    // 2. A clock that counts up every second
+    // 2. Tick every second (drives the clock)
     useEffect(() => {
-        const timer = setInterval(() => setElapsed((s) => s + 1), 1000);
+        const timer = setInterval(() => setNow(Date.now()), 1000);
         return () => clearInterval(timer);
     }, []);
 
-    // 3. Save answers in the browser so a refresh doesn't lose them
+    // 3. Keep a copy in this browser and note that something changed
     useEffect(() => {
-        if (questions.length > 0) {
-            localStorage.setItem(storageKey, JSON.stringify({ answers, times }));
-        }
-    }, [answers, times, questions.length, storageKey]);
+        latest.current = { questions, answers, marked, times };
+        if (questions.length === 0) return;
+        localStorage.setItem(storageKey, JSON.stringify({ answers, marked, times }));
+        dirty.current = true;
+    }, [questions, answers, marked, times, storageKey]);
 
-    // Adds the time spent on the current question; returns the updated totals
+    // 4. Mock tests: autosave to the server every 10 seconds if something changed
+    const isMock = info?.mode === "mock";
+    useEffect(() => {
+        if (!isMock) return;
+        const timer = setInterval(() => {
+            if (!dirty.current || submitted.current) return;
+            dirty.current = false;
+            const l = latest.current;
+            setSaveState("saving");
+            api
+                .put(`/attempts/${id}/answers`, { answers: buildPayload(l.questions, l.answers, l.marked, l.times) })
+                .then(() => setSaveState("saved"))
+                .catch((err) => {
+                    if (err.response?.status === 409) navigate(`/result/${id}`, { replace: true }); // time already up
+                    else {
+                        dirty.current = true;
+                        setSaveState("error");
+                    }
+                });
+        }, 10000);
+        return () => clearInterval(timer);
+    }, [isMock, id, navigate]);
+
+    // Adds time spent on the current question; returns the updated totals
     const recordTime = () => {
         const q = questions[current];
         const spent = Math.round((Date.now() - startedAt.current) / 1000);
@@ -90,59 +136,64 @@ export default function TestScreen() {
     const chooseOption = (question, optionId) => {
         setAnswers((prev) => {
             const selected = prev[question._id] || [];
-            let next;
-            if (question.type === "mcq_multi") {
-                // Multiple correct: click to add or remove
-                next = selected.includes(optionId)
-                    ? selected.filter((x) => x !== optionId)
-                    : [...selected, optionId];
-            } else {
-                // Single correct: click again to unselect
-                next = selected[0] === optionId ? [] : [optionId];
-            }
+            const next =
+                question.type === "mcq_multi"
+                    ? selected.includes(optionId)
+                        ? selected.filter((x) => x !== optionId)
+                        : [...selected, optionId]
+                    : selected[0] === optionId
+                        ? []
+                        : [optionId];
             return { ...prev, [question._id]: next };
         });
     };
 
-    const clearAnswer = (question) => setAnswers((prev) => ({ ...prev, [question._id]: [] }));
-
-    const submit = async () => {
-        const unanswered = questions.filter((q) => !(answers[q._id] || []).length).length;
-        const message =
-            unanswered > 0
-                ? `You have ${unanswered} unanswered question(s). Submit anyway?`
-                : "Submit your answers?";
-        if (!window.confirm(message)) return;
-
+    const submit = async (auto = false) => {
+        if (submitted.current) return;
+        if (!auto) {
+            const unanswered = questions.filter((q) => !(answers[q._id] || []).length).length;
+            const markedCount = questions.filter((q) => marked[q._id]).length;
+            const parts = [];
+            if (unanswered) parts.push(`${unanswered} unanswered`);
+            if (markedCount) parts.push(`${markedCount} marked for review`);
+            const message = parts.length ? `You have ${parts.join(" and ")}. Submit anyway?` : "Submit your answers?";
+            if (!window.confirm(message)) return;
+        }
+        submitted.current = true;
         const finalTimes = recordTime();
         setSubmitting(true);
         setError("");
         try {
-            await api.post(`/attempts/${id}/submit`, {
-                answers: questions.map((q) => ({
-                    questionId: q._id,
-                    selectedOptionIds: answers[q._id] || [],
-                    timeSpentSec: finalTimes[q._id] || 0,
-                })),
-            });
+            await api.post(`/attempts/${id}/submit`, { answers: buildPayload(questions, answers, marked, finalTimes) });
             localStorage.removeItem(storageKey);
             navigate(`/result/${id}`, { replace: true });
         } catch (err) {
-            setError(getErrorMessage(err));
+            if (err.response?.status === 400) {
+                // already submitted (for example, automatically by the server)
+                localStorage.removeItem(storageKey);
+                navigate(`/result/${id}`, { replace: true });
+                return;
+            }
+            submitted.current = false;
             setSubmitting(false);
+            setError(getErrorMessage(err));
         }
     };
 
+    const remaining = info?.expiresAt
+        ? Math.floor((new Date(info.expiresAt).getTime() - (now + clockOffset)) / 1000)
+        : null;
+
+    // 5. Time is up: submit automatically
+    useEffect(() => {
+        if (remaining !== null && remaining <= 0 && !submitted.current) submit(true);
+    });
+
     if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center text-slate-500">
-                Loading questions...
-            </div>
-        );
+        return <div className="min-h-screen flex items-center justify-center text-slate-500">Loading questions...</div>;
     }
 
     const question = questions[current];
-
     if (!question) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
@@ -156,21 +207,25 @@ export default function TestScreen() {
         );
     }
 
-    const selected = answers[question._id] || [];
-    const answeredCount = questions.filter((q) => (answers[q._id] || []).length > 0).length;
-    const isLast = current === questions.length - 1;
+    const clockText = formatClock(remaining !== null ? remaining : Math.floor((now - openedAt) / 1000));
+    let clockColor = "text-slate-700";
+    if (remaining !== null && remaining <= 60) clockColor = "text-red-600 animate-pulse";
+    else if (remaining !== null && remaining <= 300) clockColor = "text-amber-600";
 
     return (
         <div className="min-h-screen bg-slate-50">
-            {/* Top bar: title, clock, submit */}
             <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
                 <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-                    <span className="font-semibold text-slate-900">Practice</span>
-                    <span className="font-mono text-lg text-slate-700" title="Time elapsed">
-                        {formatClock(elapsed)}
-                    </span>
+                    <div>
+                        <p className="font-semibold text-slate-900">{info.title}</p>
+                        {isMock && <p className="text-xs text-slate-500">{SAVE_TEXT[saveState] || "Answers save automatically"}</p>}
+                    </div>
+                    <div className="text-center">
+                        <p className={`font-mono text-xl font-semibold ${clockColor}`}>{clockText}</p>
+                        <p className="text-xs text-slate-500">{isMock ? "time left" : "time spent"}</p>
+                    </div>
                     <button
-                        onClick={submit}
+                        onClick={() => submit(false)}
                         disabled={submitting}
                         className="rounded-lg bg-indigo-600 text-white text-sm font-medium px-4 py-2 hover:bg-indigo-700 disabled:opacity-60"
                     >
@@ -180,133 +235,33 @@ export default function TestScreen() {
             </header>
 
             <main className="max-w-6xl mx-auto px-4 py-6 grid lg:grid-cols-4 gap-6">
-                {/* Question */}
-                <section className="lg:col-span-3 bg-white rounded-xl border border-slate-200 p-6">
-                    {error && (
-                        <div className="mb-4 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-3">{error}</div>
-                    )}
-
-                    <div className="flex flex-wrap items-center gap-2 text-sm">
-                        <span className="font-semibold text-slate-900">
-                            Question {current + 1} of {questions.length}
-                        </span>
-                        <span className={`px-2 py-0.5 rounded-md text-xs font-medium capitalize ${DIFFICULTY_STYLES[question.difficulty] || ""}`}>
-                            {question.difficulty}
-                        </span>
-                        {markingScheme && (
-                            <span className="text-xs text-slate-500">
-                                +{markingScheme.correct} correct, {markingScheme.incorrect} wrong
-                            </span>
-                        )}
-                    </div>
-
-                    {question.type === "mcq_multi" && (
-                        <p className="text-xs text-indigo-700 mt-2">More than one answer can be correct.</p>
-                    )}
-
-                    <p className="text-lg text-slate-900 mt-4 whitespace-pre-line">{question.text}</p>
-
-                    {question.images?.map((img) => (
-                        <img key={img.url} src={img.url} alt={img.alt || "Question diagram"} className="mt-4 max-h-72 rounded-lg border border-slate-200" />
-                    ))}
-
-                    {/* Options */}
-                    <div className="mt-6 space-y-3">
-                        {question.options.map((opt) => {
-                            const isSelected = selected.includes(opt.id);
-                            return (
-                                <button
-                                    key={opt.id}
-                                    onClick={() => chooseOption(question, opt.id)}
-                                    className={`w-full text-left flex items-start gap-3 rounded-xl border px-4 py-3 ${isSelected
-                                        ? "border-indigo-600 bg-indigo-50"
-                                        : "border-slate-200 hover:border-slate-400"
-                                        }`}
-                                >
-                                    <span
-                                        className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm font-semibold ${isSelected ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-700"
-                                            }`}
-                                    >
-                                        {opt.id}
-                                    </span>
-                                    <span className="text-slate-800 pt-0.5">
-                                        {opt.text}
-                                        {opt.image?.url && (
-                                            <img src={opt.image.url} alt={`Option ${opt.id}`} className="mt-2 max-h-40 rounded" />
-                                        )}
-                                    </span>
-                                </button>
-                            );
-                        })}
-                    </div>
-
-                    {/* Navigation */}
-                    <div className="mt-6 flex items-center justify-between gap-2">
-                        <button
-                            onClick={() => goTo(current - 1)}
-                            disabled={current === 0}
-                            className="rounded-lg border border-slate-300 text-slate-700 text-sm font-medium px-4 py-2 disabled:opacity-40"
-                        >
-                            ← Previous
-                        </button>
-                        <button
-                            onClick={() => clearAnswer(question)}
-                            disabled={selected.length === 0}
-                            className="text-sm text-slate-500 hover:text-slate-800 disabled:opacity-40"
-                        >
-                            Clear answer
-                        </button>
-                        {isLast ? (
-                            <button
-                                onClick={submit}
-                                disabled={submitting}
-                                className="rounded-lg bg-indigo-600 text-white text-sm font-medium px-4 py-2 hover:bg-indigo-700 disabled:opacity-60"
-                            >
-                                Submit
-                            </button>
-                        ) : (
-                            <button
-                                onClick={() => goTo(current + 1)}
-                                className="rounded-lg bg-slate-900 text-white text-sm font-medium px-4 py-2 hover:bg-slate-700"
-                            >
-                                Next →
-                            </button>
-                        )}
-                    </div>
-                </section>
-
-                {/* Question palette */}
-                <aside className="bg-white rounded-xl border border-slate-200 p-5 h-fit">
-                    <h2 className="font-semibold text-slate-900">Questions</h2>
-                    <p className="text-xs text-slate-500 mt-1">
-                        {answeredCount} answered · {questions.length - answeredCount} left
-                    </p>
-
-                    <div className="grid grid-cols-5 gap-2 mt-4">
-                        {questions.map((q, index) => {
-                            const answered = (answers[q._id] || []).length > 0;
-                            return (
-                                <button
-                                    key={q._id}
-                                    onClick={() => goTo(index)}
-                                    className={`h-9 rounded-lg text-sm font-medium ${answered ? "bg-green-500 text-white" : "bg-slate-100 text-slate-700"
-                                        } ${index === current ? "ring-2 ring-indigo-500 ring-offset-1" : ""}`}
-                                >
-                                    {index + 1}
-                                </button>
-                            );
-                        })}
-                    </div>
-
-                    <div className="mt-4 space-y-1 text-xs text-slate-500">
-                        <p className="flex items-center gap-2">
-                            <span className="w-3 h-3 rounded bg-green-500" /> Answered
-                        </p>
-                        <p className="flex items-center gap-2">
-                            <span className="w-3 h-3 rounded bg-slate-100 border border-slate-200" /> Not answered
-                        </p>
-                    </div>
-                </aside>
+                <div className="lg:col-span-3">
+                    {error && <div className="mb-4 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-3">{error}</div>}
+                    <QuestionView
+                        question={question}
+                        index={current}
+                        total={questions.length}
+                        selected={answers[question._id] || []}
+                        isMarked={Boolean(marked[question._id])}
+                        markingScheme={info.markingScheme}
+                        isMock={isMock}
+                        submitting={submitting}
+                        onChoose={(optionId) => chooseOption(question, optionId)}
+                        onClear={() => setAnswers((prev) => ({ ...prev, [question._id]: [] }))}
+                        onToggleMark={() => setMarked((prev) => ({ ...prev, [question._id]: !prev[question._id] }))}
+                        onPrev={() => goTo(current - 1)}
+                        onNext={() => goTo(current + 1)}
+                        onSubmit={() => submit(false)}
+                    />
+                </div>
+                <QuestionPalette
+                    questions={questions}
+                    current={current}
+                    answers={answers}
+                    marked={marked}
+                    showMarked={isMock}
+                    onJump={goTo}
+                />
             </main>
         </div>
     );

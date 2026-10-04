@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api, { getErrorMessage } from "../../api/axios";
+import RankCard from "../../components/RankCard";
 
 // 200 -> "3 min 20s"
 const formatTime = (seconds = 0) => {
@@ -126,6 +127,7 @@ export default function Result() {
             </header>
 
             <main className="max-w-4xl mx-auto px-4 py-8">
+        <RankCard data={data} />
                 {/* Score summary */}
                 <section className="bg-white rounded-xl border border-slate-200 p-6">
                     <p className="text-sm text-slate-500">Your score</p>
