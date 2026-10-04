@@ -6,6 +6,7 @@ import Dashboard from "./pages/student/Dashboard";
 import PracticeSetup from "./pages/student/PracticeSetup";
 import TestScreen from "./pages/student/TestScreen";
 import Result from "./pages/student/Result";
+import Revise from "./pages/student/Revise";
 
 // Wraps a page so only logged-in users can see it
 const protect = (page) => <ProtectedRoute>{page}</ProtectedRoute>;
@@ -22,6 +23,7 @@ export default function App() {
       {/* Logged-in pages */}
       <Route path="/dashboard" element={protect(<Dashboard />)} />
       <Route path="/practice" element={protect(<PracticeSetup />)} />
+      <Route path="/revise" element={protect(<Revise />)} />
       <Route path="/attempt/:id" element={protect(<TestScreen />)} />
       <Route path="/result/:id" element={protect(<Result />)} />
 

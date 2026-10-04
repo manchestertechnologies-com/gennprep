@@ -90,12 +90,20 @@ export default function Dashboard() {
                 <h1 className="text-2xl font-bold text-slate-900">Welcome back, {user.name}</h1>
                 <p className="text-slate-500 mt-1">Your {examCode} preparation at a glance</p>
 
-                <Link
-                    to="/practice"
-                    className="inline-block mt-4 rounded-lg bg-indigo-600 text-white text-sm font-medium px-4 py-2.5 hover:bg-indigo-700"
-                >
-                    Start practice
-                </Link>
+                <div className="flex flex-wrap gap-3 mt-4">
+                    <Link
+                        to="/practice"
+                        className="rounded-lg bg-indigo-600 text-white text-sm font-medium px-4 py-2.5 hover:bg-indigo-700"
+                    >
+                        Start practice
+                    </Link>
+                    <Link
+                        to="/revise"
+                        className="rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-medium px-4 py-2.5 hover:border-slate-400"
+                    >
+                        Revise mistakes and bookmarks
+                    </Link>
+                </div>
 
                 {error && <div className="mt-6 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-3">{error}</div>}
 
