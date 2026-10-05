@@ -4,6 +4,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import ForgotPassword from "./pages/auth/ForgotPassword";
 import Dashboard from "./pages/student/Dashboard";
 import PracticeSetup from "./pages/student/PracticeSetup";
 import TestScreen from "./pages/student/TestScreen";
@@ -34,6 +35,7 @@ export default function App() {
       {/* Public pages */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
 
       {/* Student pages */}
       <Route path="/dashboard" element={protect(<Dashboard />)} />
