@@ -4,6 +4,7 @@ import api, { getErrorMessage } from "../../api/axios";
 import AdminLayout from "../../components/AdminLayout";
 import SyllabusPicker from "../../components/SyllabusPicker";
 import OptionsEditor from "../../components/OptionsEditor";
+import QuestionImages from "../../components/QuestionImages";
 
 const inputClass =
     "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500";
@@ -18,6 +19,7 @@ const EMPTY = {
     sourceKind: "original",
     sourceYear: "",
     tags: "",
+  images: [],
     status: "published",
 };
 
@@ -60,6 +62,7 @@ export default function QuestionForm() {
                     sourceKind: q.source?.kind || "original",
                     sourceYear: q.source?.year || "",
                     tags: (q.tags || []).join(", "),
+          images: q.images || [],
                     status: q.status === "archived" ? "draft" : q.status,
                 });
             })
@@ -94,6 +97,7 @@ export default function QuestionForm() {
             source: { kind: form.sourceKind, ...(form.sourceYear ? { year: Number(form.sourceYear) } : {}) },
             tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
             status: form.status,
+      images: form.images,
         };
 
         setSaving(true);
@@ -177,7 +181,8 @@ export default function QuestionForm() {
                         />
                     </div>
 
-                    <Field label="Explanation (shown after the test)">
+                              <QuestionImages images={form.images} onChange={(imgs) => update("images", imgs)} />
+<Field label="Explanation (shown after the test)">
                         <textarea rows={3} value={form.explanation} onChange={(e) => update("explanation", e.target.value)} className={inputClass} />
                     </Field>
 

@@ -10,6 +10,8 @@ const {
 } = require("../controllers/questionController");
 const { createTest, listTestsAdmin, deleteTest } = require("../controllers/testController");
 const admin = require("../controllers/adminController");
+const uploadImage = require("../middleware/upload");
+const { uploadQuestionImage } = require("../controllers/uploadController");
 
 const router = express.Router();
 
@@ -17,6 +19,7 @@ const router = express.Router();
 router.use(protect, isAdmin);
 
 router.get("/overview", admin.getOverview);
+router.post("/upload", uploadImage, uploadQuestionImage);
 
 // Questions
 router.post("/questions", createQuestion);
