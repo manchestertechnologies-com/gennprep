@@ -1,3 +1,4 @@
+import MathText from "./MathText";
 const DIFFICULTY_STYLES = {
     easy: "bg-green-50 text-green-700",
     medium: "bg-amber-50 text-amber-700",
@@ -48,7 +49,7 @@ export default function QuestionView({
                 <p className="text-xs text-indigo-700 mt-2">More than one answer can be correct.</p>
             )}
 
-            <p className="text-lg text-slate-900 mt-4 whitespace-pre-line">{question.text}</p>
+            <MathText as="p" className="text-lg text-slate-900 mt-4 whitespace-pre-line" text={question.text} />
 
             {question.images?.map((img) => (
                 <img key={img.url} src={img.url} alt={img.alt || "Question diagram"} className="mt-4 max-h-72 rounded-lg border border-slate-200" />
@@ -71,7 +72,7 @@ export default function QuestionView({
                                 {opt.id}
                             </span>
                             <span className="text-slate-800 pt-0.5">
-                                {opt.text}
+                                <MathText text={opt.text} />
                                 {opt.image?.url && <img src={opt.image.url} alt={`Option ${opt.id}`} className="mt-2 max-h-40 rounded" />}
                             </span>
                         </button>

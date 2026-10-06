@@ -1,3 +1,4 @@
+import MathText from "../../components/MathText";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api, { getErrorMessage } from "../../api/axios";
@@ -142,12 +143,12 @@ export default function Revise() {
                                                 Remove
                                             </button>
                                         </div>
-                                        <p className="text-slate-900 mt-2 whitespace-pre-line">{b.question.text}</p>
+                                        <MathText as="p" className="text-slate-900 mt-2 whitespace-pre-line" text={b.question.text} />
                                         <ul className="mt-3 grid sm:grid-cols-2 gap-2">
                                             {b.question.options.map((opt) => (
                                                 <li key={opt.id} className="text-sm text-slate-700 rounded-lg border border-slate-200 px-3 py-2">
                                                     <span className="font-semibold mr-2">{opt.id}</span>
-                                                    {opt.text}
+                                                    <MathText text={opt.text} />
                                                 </li>
                                             ))}
                                         </ul>

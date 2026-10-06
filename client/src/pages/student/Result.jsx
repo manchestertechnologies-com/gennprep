@@ -1,3 +1,4 @@
+import MathText from "../../components/MathText";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api, { getErrorMessage } from "../../api/axios";
@@ -201,7 +202,7 @@ export default function Result() {
                                     </button>
                                 </div>
 
-                                <p className="text-slate-900 mt-3 whitespace-pre-line">{item.text}</p>
+                                <MathText as="p" className="text-slate-900 mt-3 whitespace-pre-line" text={item.text} />
 
                                 {item.images?.map((img) => (
                                     <img key={img.url} src={img.url} alt={img.alt || "Question diagram"} className="mt-3 max-h-64 rounded-lg border border-slate-200" />
@@ -219,7 +220,7 @@ export default function Result() {
                                         return (
                                             <div key={opt.id} className={`flex items-start gap-3 rounded-lg border px-3 py-2 ${box}`}>
                                                 <span className="font-semibold text-slate-700 w-5">{opt.id}</span>
-                                                <span className="text-slate-800 flex-1">{opt.text}</span>
+                                                <MathText className="text-slate-800 flex-1" text={opt.text} />
                                                 {isCorrectOption && (
                                                     <span className="text-xs font-medium text-green-700">
                                                         {isChosen ? "Your answer ✓" : "Correct answer"}
@@ -236,7 +237,7 @@ export default function Result() {
                                 {item.explanation?.text && (
                                     <div className="mt-4 rounded-lg bg-indigo-50 px-4 py-3">
                                         <p className="text-xs font-semibold text-indigo-700 uppercase tracking-wide">Explanation</p>
-                                        <p className="text-sm text-slate-800 mt-1 whitespace-pre-line">{item.explanation.text}</p>
+                                        <MathText as="p" className="text-sm text-slate-800 mt-1 whitespace-pre-line" text={item.explanation.text} />
                                     </div>
                                 )}
                             </article>
