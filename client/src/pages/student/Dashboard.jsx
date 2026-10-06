@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import api, { getErrorMessage } from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
 import { useExam } from "../../context/ExamContext";
+import { DashboardSkeleton } from "../../components/Skeleton";
 import { ChapterList, RecentTests, RecommendedCard, StatsRow, WeeklyChart } from "../../components/DashboardWidgets";
 
 export default function Dashboard() {
@@ -38,7 +39,7 @@ export default function Dashboard() {
       {error && <div className="mt-6 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-3">{error}</div>}
 
       {!data && !error && (
-        <div className="mt-6 rounded-xl bg-white border border-slate-200 p-6 text-slate-500">Loading your progress...</div>
+        <DashboardSkeleton />
       )}
 
       {data && <StatsRow totals={data.totals} streak={data.streak} />}
