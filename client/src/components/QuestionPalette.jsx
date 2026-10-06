@@ -1,5 +1,6 @@
+import { useState } from "react";
 // The grid of question numbers on the right side of the test screen
-export default function QuestionPalette({ questions, current, answers, marked, showMarked, onJump }) {
+function PaletteGrid({ questions, current, answers, marked, showMarked, onJump }) {
     const isAnswered = (q) => (answers[q._id] || []).length > 0;
     const answeredCount = questions.filter(isAnswered).length;
     const markedCount = questions.filter((q) => marked[q._id]).length;
@@ -52,4 +53,51 @@ export default function QuestionPalette({ questions, current, answers, marked, s
             </div>
         </aside>
     );
+}
+
+// Laptop: grid on the side. Phone: floating button that opens the grid from the bottom.
+export default function QuestionPalette(props) {
+  const [open, setOpen] = useState(false);
+  const answered = props.questions.filter((q) => (props.answers[q._id] || []).length > 0).length;
+
+  return (
+    <>
+      <div className="hidden lg:block">
+        <PaletteGrid {...props} />
+      </div>
+
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="lg:hidden fixed bottom-5 right-5 z-30 flex items-center gap-2 rounded-full bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-300 active:scale-95"
+      >
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" /></svg>
+        Questions {answered}/{props.questions.length}
+      </button>
+
+      {open && (
+        <div className="lg:hidden fixed inset-0 z-40 flex items-end bg-slate-900/50" onClick={() => setOpen(false)}>
+          <div
+            role="dialog"
+            aria-label="Jump to a question"
+            className="w-full max-h-[75vh] overflow-y-auto rounded-t-2xl bg-white p-4 pb-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-slate-300" />
+            <div className="mb-3 flex items-center justify-between">
+              <p className="font-semibold text-slate-900">Jump to a question</p>
+              <button type="button" onClick={() => setOpen(false)} className="rounded-lg px-3 py-1 text-2xl leading-none text-slate-500 hover:bg-slate-100" aria-label="Close">&times;</button>
+            </div>
+            <PaletteGrid
+              {...props}
+              onJump={(...args) => {
+                props.onJump(...args);
+                setOpen(false);
+              }}
+            />
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
