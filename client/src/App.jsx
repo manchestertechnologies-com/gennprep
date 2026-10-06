@@ -1,3 +1,4 @@
+import Analytics from "./pages/student/Analytics";
 import Welcome from "./pages/student/Welcome";
 import { ExamProvider } from "./context/ExamContext";
 import Landing from "./pages/Landing";
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="/practice" element={<PracticeSetup />} />
         <Route path="/mock-tests" element={<MockTests />} />
         <Route path="/revise" element={<Revise />} />
+        <Route path="/analytics" element={<Analytics />} />
         <Route path="/result/:id" element={<Result />} />
       </Route>
 
