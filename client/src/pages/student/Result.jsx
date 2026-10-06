@@ -91,7 +91,7 @@ export default function Result() {
 
     if (error) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+            <div className="bg-slate-50 flex items-center justify-center p-4">
                 <div className="bg-white rounded-xl border border-slate-200 p-6 text-center max-w-md">
                     <p className="text-red-700">{error}</p>
                     <Link to="/dashboard" className="inline-block mt-4 text-indigo-600 font-medium hover:underline">
@@ -116,15 +116,7 @@ export default function Result() {
     const visible = review.filter((item) => filter === "all" || verdictOf(item) === filter);
 
     return (
-        <div className="min-h-screen bg-slate-50">
-            <header className="bg-white border-b border-slate-200">
-                <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-                    <span className="text-lg font-bold text-slate-900">ExamPrep AI</span>
-                    <Link to="/dashboard" className="text-sm font-medium text-slate-600 hover:text-slate-900">
-                        ← Back to dashboard
-                    </Link>
-                </div>
-            </header>
+        <div className="bg-slate-50">
 
             <main className="max-w-4xl mx-auto px-4 py-8">
         <RankCard data={data} />

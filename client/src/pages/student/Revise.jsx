@@ -63,7 +63,7 @@ export default function Revise() {
 
     if (!examId) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+            <div className="bg-slate-50 flex items-center justify-center p-4">
                 <div className="bg-white rounded-xl border border-slate-200 p-6 text-center">
                     <p className="text-slate-700">Choose an exam on your dashboard first.</p>
                     <Link to="/dashboard" className="inline-block mt-4 text-indigo-600 font-medium hover:underline">
@@ -75,15 +75,7 @@ export default function Revise() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50">
-            <header className="bg-white border-b border-slate-200">
-                <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-                    <span className="text-lg font-bold text-slate-900">ExamPrep AI</span>
-                    <Link to="/dashboard" className="text-sm font-medium text-slate-600 hover:text-slate-900">
-                        ← Back to dashboard
-                    </Link>
-                </div>
-            </header>
+        <div className="bg-slate-50">
 
             <main className="max-w-4xl mx-auto px-4 py-8">
                 <h1 className="text-2xl font-bold text-slate-900">Revise</h1>

@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
+import StudentLayout from "./components/StudentLayout";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -37,13 +38,17 @@ export default function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
 
-      {/* Student pages */}
-      <Route path="/dashboard" element={protect(<Dashboard />)} />
-      <Route path="/practice" element={protect(<PracticeSetup />)} />
-      <Route path="/revise" element={protect(<Revise />)} />
-      <Route path="/mock-tests" element={protect(<MockTests />)} />
+      {/* Student pages share one navigation bar */}
+      <Route element={protect(<StudentLayout />)}>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/practice" element={<PracticeSetup />} />
+        <Route path="/mock-tests" element={<MockTests />} />
+        <Route path="/revise" element={<Revise />} />
+        <Route path="/result/:id" element={<Result />} />
+      </Route>
+
+      {/* The test screen is full-screen, without the menu */}
       <Route path="/attempt/:id" element={protect(<TestScreen />)} />
-      <Route path="/result/:id" element={protect(<Result />)} />
 
       {/* Admin pages */}
       <Route path="/admin" element={adminOnly(<AdminDashboard />)} />
