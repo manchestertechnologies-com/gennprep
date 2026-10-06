@@ -1,3 +1,4 @@
+import Landing from "./pages/Landing";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -31,7 +32,7 @@ function Home() {
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={protect(<Home />)} />
+      <Route path="/" element={<Landing loggedIn={protect(<Home />)} />} />
 
       {/* Public pages */}
       <Route path="/login" element={<Login />} />
