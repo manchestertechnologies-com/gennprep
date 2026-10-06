@@ -1,29 +1,35 @@
-// Sends an email. With no email account set up in .env, it prints the
+// Sends an email through Brevo's web API. This works on Render's free plan,
+// which blocks normal email ports. Without a Brevo key, it prints the
 // message in the server terminal instead, so you can still test everything.
 const sendEmail = async ({ to, subject, text }) => {
-    if (!process.env.SMTP_HOST) {
-        console.log("\n========== EMAIL (not sent: no SMTP set up) ==========");
-        console.log(`To: ${to}\nSubject: ${subject}\n\n${text}`);
-        console.log("=======================================================\n");
-        return { sent: false };
-    }
+  if (!process.env.BREVO_API_KEY || !process.env.EMAIL_FROM) {
+    console.log("\n========== EMAIL (not sent: no Brevo key set up) ==========");
+    console.log(`To: ${to}\nSubject: ${subject}\n\n${text}`);
+    console.log("===========================================================\n");
+    return { sent: false };
+  }
 
-    const nodemailer = require("nodemailer");
-    const port = Number(process.env.SMTP_PORT) || 587;
-    const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port,
-        secure: port === 465,
-        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-    });
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "api-key": process.env.BREVO_API_KEY,
+      "content-type": "application/json",
+      accept: "application/json",
+    },
+    body: JSON.stringify({
+      sender: { name: "ExamPrep AI", email: process.env.EMAIL_FROM },
+      to: [{ email: to }],
+      subject,
+      textContent: text,
+    }),
+    signal: AbortSignal.timeout(10000), // give up after 10 seconds
+  });
 
-    await transporter.sendMail({
-        from: process.env.EMAIL_FROM || process.env.SMTP_USER,
-        to,
-        subject,
-        text,
-    });
-    return { sent: true };
+  if (!res.ok) {
+    const detail = await res.text();
+    throw new Error(`Brevo error ${res.status}: ${detail}`);
+  }
+  return { sent: true };
 };
 
 module.exports = sendEmail;
