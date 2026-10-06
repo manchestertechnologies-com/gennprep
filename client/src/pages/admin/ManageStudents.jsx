@@ -1,3 +1,4 @@
+import { askConfirm } from "../../components/ConfirmDialog";
 import { useEffect, useState } from "react";
 import api, { getErrorMessage } from "../../api/axios";
 import AdminLayout from "../../components/AdminLayout";
@@ -31,7 +32,7 @@ export default function ManageStudents() {
     const toggleStatus = async (s) => {
         const status = s.status === "active" ? "suspended" : "active";
         const verb = status === "suspended" ? "Suspend" : "Activate";
-        if (!window.confirm(`${verb} ${s.name}?`)) return;
+        if (!await askConfirm(`${verb} ${s.name}?`)) return;
         try {
             await api.put(`/admin/students/${s._id}/status`, { status });
             setStudents((list) => list.map((x) => (x._id === s._id ? { ...x, status } : x)));

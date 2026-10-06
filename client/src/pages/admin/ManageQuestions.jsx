@@ -1,3 +1,4 @@
+import { askConfirm } from "../../components/ConfirmDialog";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api, { getErrorMessage } from "../../api/axios";
@@ -47,7 +48,7 @@ export default function ManageQuestions() {
     };
 
     const remove = async (q) => {
-        if (!window.confirm("Delete this question? Students won't see it, but old results keep it.")) return;
+        if (!await askConfirm("Delete this question? Students won't see it, but old results keep it.")) return;
         try {
             await api.delete(`/admin/questions/${q._id}`);
             setReload((n) => n + 1);

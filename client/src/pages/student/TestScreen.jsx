@@ -1,3 +1,4 @@
+import { askConfirm } from "../../components/ConfirmDialog";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api, { getErrorMessage } from "../../api/axios";
@@ -157,7 +158,7 @@ export default function TestScreen() {
             if (unanswered) parts.push(`${unanswered} unanswered`);
             if (markedCount) parts.push(`${markedCount} marked for review`);
             const message = parts.length ? `You have ${parts.join(" and ")}. Submit anyway?` : "Submit your answers?";
-            if (!window.confirm(message)) return;
+            if (!await askConfirm(message)) return;
         }
         submitted.current = true;
         const finalTimes = recordTime();

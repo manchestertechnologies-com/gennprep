@@ -1,3 +1,4 @@
+import { askConfirm } from "../../components/ConfirmDialog";
 import { useEffect, useState } from "react";
 import api, { getErrorMessage } from "../../api/axios";
 import AdminLayout from "../../components/AdminLayout";
@@ -56,7 +57,7 @@ export default function ManageTests() {
     };
 
     const remove = async (t) => {
-        if (!window.confirm(`Delete "${t.title}"? Students can no longer start it, but old results stay.`)) return;
+        if (!await askConfirm(`Delete "${t.title}"? Students can no longer start it, but old results stay.`)) return;
         try {
             await api.delete(`/admin/tests/${t._id}`);
             setReload((n) => n + 1);

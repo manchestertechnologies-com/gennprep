@@ -1,3 +1,4 @@
+import { askConfirm } from "../../components/ConfirmDialog";
 import { useEffect, useState } from "react";
 import api, { getErrorMessage } from "../../api/axios";
 import AdminLayout from "../../components/AdminLayout";
@@ -63,8 +64,8 @@ export default function ManageSyllabus() {
         if (name && name.trim() && name !== c.name) run(() => api.put(`/admin/chapters/${c._id}`, { name }), "Chapter renamed");
     };
 
-    const removeChapter = (c) => {
-        if (window.confirm(`Remove "${c.name}"? Its questions stay in the bank, but students won't see the chapter.`)) {
+    const removeChapter = async (c) => {
+        if (await askConfirm(`Remove "${c.name}"? Its questions stay in the bank, but students won't see the chapter.`)) {
             run(() => api.delete(`/admin/chapters/${c._id}`), "Chapter removed");
         }
     };
@@ -76,8 +77,8 @@ export default function ManageSyllabus() {
         if (ok) setNewTopic((prev) => ({ ...prev, [c._id]: "" }));
     };
 
-    const removeTopic = (t) => {
-        if (window.confirm(`Remove topic "${t.name}"?`)) run(() => api.delete(`/admin/topics/${t._id}`), "Topic removed");
+    const removeTopic = async (t) => {
+        if (await askConfirm(`Remove topic "${t.name}"?`)) run(() => api.delete(`/admin/topics/${t._id}`), "Topic removed");
     };
 
     return (
