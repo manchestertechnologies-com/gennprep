@@ -1,4 +1,5 @@
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Navigate, Outlet } from "react-router-dom";
+import { choiceKey } from "../pages/student/Welcome";
 import { useAuth } from "../context/AuthContext";
 import { ExamProvider, useExam } from "../context/ExamContext";
 
@@ -39,6 +40,7 @@ function ExamPicker() {
 function Shell() {
   const { user, logout } = useAuth();
   const { examId } = useExam();
+  if (!localStorage.getItem(choiceKey(user))) return <Navigate to="/welcome" replace />;
 
   const linkClass = ({ isActive }) =>
     `px-3 py-2 rounded-lg text-sm font-medium ${

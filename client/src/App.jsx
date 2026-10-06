@@ -1,3 +1,5 @@
+import Welcome from "./pages/student/Welcome";
+import { ExamProvider } from "./context/ExamContext";
 import Landing from "./pages/Landing";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
@@ -50,6 +52,7 @@ export default function App() {
 
       {/* The test screen is full-screen, without the menu */}
       <Route path="/attempt/:id" element={protect(<TestScreen />)} />
+      <Route path="/welcome" element={protect(<ExamProvider><Welcome /></ExamProvider>)} />
 
       {/* Admin pages */}
       <Route path="/admin" element={adminOnly(<AdminDashboard />)} />
