@@ -60,11 +60,9 @@ export default function ManageQuestions() {
     return (
         <AdminLayout
             title="Questions"
-            actions={
-                <Link to="/admin/questions/new" className="rounded-lg bg-indigo-600 text-white text-sm font-medium px-4 py-2 hover:bg-indigo-700">
+            actions={<div className="flex gap-2"><Link to="/admin/questions/bulk" className="rounded-lg border border-indigo-200 text-indigo-700 text-sm font-medium px-4 py-2 hover:bg-indigo-50">Bulk upload</Link><Link to="/admin/questions/new" className="rounded-lg bg-indigo-600 text-white text-sm font-medium px-4 py-2 hover:bg-indigo-700">
                     + Add question
-                </Link>
-            }
+                </Link></div>}
         >
             <div className="mt-6 bg-white rounded-xl border border-slate-200 p-5 space-y-3">
                 <SyllabusPicker value={filters} onChange={(v) => changeFilters({ ...filters, ...v })} />

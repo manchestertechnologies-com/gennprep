@@ -1,3 +1,4 @@
+import BulkUpload from "./pages/admin/BulkUpload";
 import Analytics from "./pages/student/Analytics";
 import Welcome from "./pages/student/Welcome";
 import { ExamProvider } from "./context/ExamContext";
@@ -60,6 +61,7 @@ export default function App() {
       <Route path="/admin" element={adminOnly(<AdminDashboard />)} />
       <Route path="/admin/syllabus" element={adminOnly(<ManageSyllabus />)} />
       <Route path="/admin/questions" element={adminOnly(<ManageQuestions />)} />
+      <Route path="/admin/questions/bulk" element={adminOnly(<BulkUpload />)} />
       <Route path="/admin/questions/:id" element={adminOnly(<QuestionForm />)} />
       <Route path="/admin/tests" element={adminOnly(<ManageTests />)} />
       <Route path="/admin/students" element={adminOnly(<ManageStudents />)} />

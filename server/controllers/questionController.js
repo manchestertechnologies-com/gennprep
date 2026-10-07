@@ -223,3 +223,4 @@ module.exports = {
     updateQuestion,
     deleteQuestion,
 };
+module.exports.validateQuestion = validateQuestion;

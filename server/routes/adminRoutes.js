@@ -12,6 +12,7 @@ const { createTest, listTestsAdmin, deleteTest } = require("../controllers/testC
 const admin = require("../controllers/adminController");
 const uploadImage = require("../middleware/upload");
 const { uploadQuestionImage } = require("../controllers/uploadController");
+const { bulkImport, bulkSyllabus } = require("../controllers/bulkQuestionController");
 
 const router = express.Router();
 
@@ -23,6 +24,8 @@ router.post("/upload", uploadImage, uploadQuestionImage);
 
 // Questions
 router.post("/questions", createQuestion);
+router.post("/questions/bulk", bulkImport);
+router.get("/questions/bulk/syllabus", bulkSyllabus);
 router.get("/questions", listQuestions);
 router.get("/questions/:id", getQuestion);
 router.put("/questions/:id", updateQuestion);
