@@ -1,125 +1,77 @@
 import MathText from "./MathText";
+
 const DIFFICULTY_STYLES = {
-    easy: "bg-green-50 text-green-700",
-    medium: "bg-amber-50 text-amber-700",
-    hard: "bg-red-50 text-red-700",
+  easy: "bg-emerald-50 text-emerald-700",
+  medium: "bg-amber-50 text-amber-700",
+  hard: "bg-red-50 text-red-700",
 };
 
-// One question with its options and the navigation buttons
-export default function QuestionView({
-    question,
-    index,
-    total,
-    selected,
-    isMarked,
-    markingScheme,
-    isMock,
-    submitting,
-    onChoose,
-    onClear,
-    onToggleMark,
-    onPrev,
-    onNext,
-    onSubmit,
-}) {
-    const isLast = index === total - 1;
+// One question card with big, easy-to-tap options
+export default function QuestionView({ question, index, total, selected, isMarked, markingScheme, onChoose }) {
+  return (
+    <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 md:p-7">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-lg font-bold text-slate-900">Question {index + 1}</span>
+        <span className="text-sm text-slate-400">of {total}</span>
+        {question.difficulty && (
+          <span className={`px-2 py-0.5 rounded-md text-xs font-semibold capitalize ${DIFFICULTY_STYLES[question.difficulty] || ""}`}>
+            {question.difficulty}
+          </span>
+        )}
+        {markingScheme && (
+          <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-600">
+            +{markingScheme.correct} / {markingScheme.incorrect}
+          </span>
+        )}
+        {isMarked && (
+          <span className="ml-auto px-2 py-0.5 rounded-md text-xs font-semibold bg-violet-50 text-violet-700">Marked for review</span>
+        )}
+      </div>
 
-    return (
-        <section className="bg-white rounded-xl border border-slate-200 p-6">
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-                <span className="font-semibold text-slate-900">
-                    Question {index + 1} of {total}
-                </span>
-                <span className={`px-2 py-0.5 rounded-md text-xs font-medium capitalize ${DIFFICULTY_STYLES[question.difficulty] || ""}`}>
-                    {question.difficulty}
-                </span>
-                {markingScheme && (
-                    <span className="text-xs text-slate-500">
-                        +{markingScheme.correct} correct, {markingScheme.incorrect} wrong
-                    </span>
-                )}
-                {isMarked && (
-                    <span className="ml-auto px-2 py-0.5 rounded-md text-xs font-medium bg-purple-50 text-purple-700">
-                        Marked for review
-                    </span>
-                )}
-            </div>
+      {question.type === "mcq_multi" && (
+        <p className="mt-3 inline-block rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700">
+          More than one answer can be correct
+        </p>
+      )}
 
-            {question.type === "mcq_multi" && (
-                <p className="text-xs text-indigo-700 mt-2">More than one answer can be correct.</p>
-            )}
+      <MathText as="p" className="mt-5 text-lg md:text-xl leading-relaxed text-slate-900 whitespace-pre-line" text={question.text} />
 
-            <MathText as="p" className="text-lg text-slate-900 mt-4 whitespace-pre-line" text={question.text} />
+      {question.images?.map((img) => (
+        <img key={img.url} src={img.url} alt={img.alt || "Question diagram"} className="mt-4 max-h-72 rounded-lg border border-slate-200" />
+      ))}
 
-            {question.images?.map((img) => (
-                <img key={img.url} src={img.url} alt={img.alt || "Question diagram"} className="mt-4 max-h-72 rounded-lg border border-slate-200" />
-            ))}
+      <div className="mt-6 space-y-3" role="group" aria-label="Options">
+        {question.options.map((opt, i) => {
+          const isSelected = selected.includes(opt.id);
+          return (
+            <button
+              key={opt.id}
+              onClick={() => onChoose(opt.id)}
+              aria-pressed={isSelected}
+              className={`w-full text-left flex items-start gap-4 rounded-xl border-2 px-4 py-3.5 transition ${
+                isSelected ? "border-indigo-600 bg-indigo-50 shadow-sm" : "border-slate-200 hover:border-indigo-300 hover:bg-slate-50"
+              }`}
+            >
+              <span
+                className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                  isSelected ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-700"
+                }`}
+              >
+                {opt.id}
+              </span>
+              <span className="flex-1 text-slate-800 pt-1">
+                <MathText text={opt.text} />
+                {opt.image?.url && <img src={opt.image.url} alt={`Option ${opt.id}`} className="mt-2 max-h-40 rounded" />}
+              </span>
+              <span className="hidden md:block pt-1.5 text-xs text-slate-300">{i + 1}</span>
+            </button>
+          );
+        })}
+      </div>
 
-            <div className="mt-6 space-y-3">
-                {question.options.map((opt) => {
-                    const isSelected = selected.includes(opt.id);
-                    return (
-                        <button
-                            key={opt.id}
-                            onClick={() => onChoose(opt.id)}
-                            className={`w-full text-left flex items-start gap-3 rounded-xl border px-4 py-3 ${isSelected ? "border-indigo-600 bg-indigo-50" : "border-slate-200 hover:border-slate-400"
-                                }`}
-                        >
-                            <span
-                                className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm font-semibold ${isSelected ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-700"
-                                    }`}
-                            >
-                                {opt.id}
-                            </span>
-                            <span className="text-slate-800 pt-0.5">
-                                <MathText text={opt.text} />
-                                {opt.image?.url && <img src={opt.image.url} alt={`Option ${opt.id}`} className="mt-2 max-h-40 rounded" />}
-                            </span>
-                        </button>
-                    );
-                })}
-            </div>
-
-            <div className="mt-6 flex flex-wrap items-center gap-2">
-                <button
-                    onClick={onPrev}
-                    disabled={index === 0}
-                    className="rounded-lg border border-slate-300 text-slate-700 text-sm font-medium px-4 py-2 disabled:opacity-40"
-                >
-                    ← Previous
-                </button>
-                <button
-                    onClick={onClear}
-                    disabled={selected.length === 0}
-                    className="text-sm text-slate-500 hover:text-slate-800 px-2 disabled:opacity-40"
-                >
-                    Clear answer
-                </button>
-                {isMock && (
-                    <button
-                        onClick={onToggleMark}
-                        className={`rounded-lg border text-sm font-medium px-4 py-2 ${isMarked ? "border-purple-500 bg-purple-50 text-purple-700" : "border-slate-300 text-slate-700"
-                            }`}
-                    >
-                        {isMarked ? "Unmark review" : "Mark for review"}
-                    </button>
-                )}
-                <div className="ml-auto">
-                    {isLast ? (
-                        <button
-                            onClick={onSubmit}
-                            disabled={submitting}
-                            className="rounded-lg bg-indigo-600 text-white text-sm font-medium px-4 py-2 hover:bg-indigo-700 disabled:opacity-60"
-                        >
-                            Submit
-                        </button>
-                    ) : (
-                        <button onClick={onNext} className="rounded-lg bg-slate-900 text-white text-sm font-medium px-4 py-2 hover:bg-slate-700">
-                            Next →
-                        </button>
-                    )}
-                </div>
-            </div>
-        </section>
-    );
+      <p className="hidden md:block mt-5 text-xs text-slate-400">
+        Tip: press 1-4 to choose an option, and the arrow keys to move between questions.
+      </p>
+    </section>
+  );
 }
