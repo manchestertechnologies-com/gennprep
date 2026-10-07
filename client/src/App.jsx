@@ -1,3 +1,4 @@
+import Profile from "./pages/student/Profile";
 import BulkUpload from "./pages/admin/BulkUpload";
 import Analytics from "./pages/student/Analytics";
 import Welcome from "./pages/student/Welcome";
@@ -50,6 +51,7 @@ export default function App() {
         <Route path="/mock-tests" element={<MockTests />} />
         <Route path="/revise" element={<Revise />} />
         <Route path="/analytics" element={<Analytics />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/result/:id" element={<Result />} />
       </Route>
 

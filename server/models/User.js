@@ -44,6 +44,8 @@ const userSchema = new mongoose.Schema(
             longest: { type: Number, default: 0 },
             lastActiveDate: { type: Date },
         },
+        classLevel: { type: String, enum: ["11", "12", "dropper"] },
+        targetYear: { type: Number },
         lastLoginAt: { type: Date },
     },
     { timestamps: true } // adds createdAt and updatedAt automatically
