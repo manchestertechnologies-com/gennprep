@@ -1,0 +1,33 @@
+// Part of the syllabus list used by loadSyllabus.js: [class, chapter, "topic | topic | ..."]
+const PHYSICS = [
+  ["11", "Units and Measurements", "SI Units | Significant Figures | Dimensional Analysis | Errors in Measurement"],
+  ["11", "Motion in a Straight Line", "Speed and Velocity | Acceleration | Equations of Motion | Motion Graphs | Relative Velocity"],
+  ["11", "Motion in a Plane", "Scalars and Vectors | Vector Addition and Resolution | Projectile Motion | Uniform Circular Motion | Relative Velocity in Two Dimensions"],
+  ["11", "Laws of Motion", "Newton's Laws of Motion | Momentum and Impulse | Friction | Circular Motion Dynamics | Equilibrium of Forces"],
+  ["11", "Work, Energy and Power", "Work Done by a Force | Kinetic and Potential Energy | Work-Energy Theorem | Power | Collisions"],
+  ["11", "System of Particles and Rotational Motion", "Centre of Mass | Torque and Angular Momentum | Moment of Inertia | Rolling Motion | Equilibrium of Rigid Bodies"],
+  ["11", "Gravitation", "Universal Law of Gravitation | Acceleration due to Gravity | Gravitational Potential Energy | Escape Velocity and Satellites | Kepler's Laws"],
+  ["11", "Mechanical Properties of Solids", "Stress and Strain | Hooke's Law and Elastic Moduli | Stress-Strain Curve | Elastic Potential Energy"],
+  ["11", "Mechanical Properties of Fluids", "Pressure and Pascal's Law | Buoyancy | Bernoulli's Principle | Viscosity | Surface Tension"],
+  ["11", "Thermal Properties of Matter", "Temperature and Thermal Expansion | Specific Heat and Calorimetry | Change of State and Latent Heat | Heat Transfer"],
+  ["11", "Thermodynamics", "Zeroth and First Law | Thermodynamic Processes | Second Law and Heat Engines | Carnot Engine"],
+  ["11", "Kinetic Theory", "Ideal Gas Equation | Kinetic Theory of Gases | Law of Equipartition of Energy | Specific Heat of Gases | Mean Free Path"],
+  ["11", "Oscillations", "Simple Harmonic Motion | Energy in SHM | Simple Pendulum | Spring-Mass System | Damped and Forced Oscillations"],
+  ["11", "Waves", "Transverse and Longitudinal Waves | Speed of a Wave | Superposition and Reflection | Standing Waves | Beats"],
+  ["12", "Electric Charges and Fields", "Coulomb's Law | Electric Field and Field Lines | Electric Dipole | Gauss's Law and Applications"],
+  ["12", "Electrostatic Potential and Capacitance", "Electric Potential | Equipotential Surfaces | Capacitors and Capacitance | Combination of Capacitors | Energy Stored in a Capacitor"],
+  ["12", "Current Electricity", "Ohm's Law and Resistivity | Drift Velocity | Combination of Resistors | Cells, EMF and Internal Resistance | Kirchhoff's Laws | Wheatstone Bridge and Meter Bridge"],
+  ["12", "Moving Charges and Magnetism", "Magnetic Force on Charges | Biot-Savart Law | Ampere's Circuital Law | Force and Torque on Current Loops | Moving Coil Galvanometer"],
+  ["12", "Magnetism and Matter", "Bar Magnet and Magnetic Dipole | Earth's Magnetism | Magnetic Properties of Materials"],
+  ["12", "Electromagnetic Induction", "Faraday's Laws | Lenz's Law | Motional EMF | Eddy Currents | Self and Mutual Inductance"],
+  ["12", "Alternating Current", "AC Voltage and Current | Reactance and Impedance | LCR Circuit and Resonance | Power in AC Circuits | Transformers"],
+  ["12", "Electromagnetic Waves", "Displacement Current | Properties of EM Waves | Electromagnetic Spectrum"],
+  ["12", "Ray Optics and Optical Instruments", "Reflection and Mirrors | Refraction and Total Internal Reflection | Lenses and Lens Formula | Prism and Dispersion | Optical Instruments"],
+  ["12", "Wave Optics", "Huygens' Principle | Interference and Young's Double Slit | Diffraction | Polarisation"],
+  ["12", "Dual Nature of Radiation and Matter", "Photoelectric Effect | Einstein's Photoelectric Equation | de Broglie Wavelength"],
+  ["12", "Atoms", "Rutherford's Model | Bohr Model of Hydrogen | Hydrogen Spectrum"],
+  ["12", "Nuclei", "Composition and Size of Nucleus | Mass Defect and Binding Energy | Radioactivity | Nuclear Fission and Fusion"],
+  ["12", "Semiconductor Electronics", "Intrinsic and Extrinsic Semiconductors | p-n Junction Diode | Diode as a Rectifier | Special Purpose Diodes | Logic Gates"],
+];
+
+module.exports = { PHYSICS };
