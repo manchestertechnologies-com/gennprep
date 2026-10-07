@@ -1,3 +1,4 @@
+import { toast } from "../../components/Toaster";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api, { getErrorMessage } from "../../api/axios";
@@ -88,7 +89,7 @@ export default function BulkUpload() {
         total += res.data.added;
       }
       setResults(map);
-      if (!dryRun) setAdded(total);
+      if (!dryRun) { setAdded(total); toast(`${total} questions added`); }
     } catch (err) {
       setError(getErrorMessage(err));
     }

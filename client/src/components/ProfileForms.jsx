@@ -1,3 +1,4 @@
+import { toast } from "./Toaster";
 import { useState } from "react";
 import api, { getErrorMessage } from "../api/axios";
 
@@ -30,7 +31,7 @@ export function DetailsForm({ profile, onSaved }) {
     try {
       const res = await api.put("/auth/profile", { ...form, targetYear: form.targetYear ? Number(form.targetYear) : null });
       onSaved(res.data.user);
-      setNote({ ok: true, text: "Your details were saved." });
+      toast("Your details were saved.");
     } catch (err) {
       setNote({ ok: false, text: getErrorMessage(err) });
     }
@@ -112,7 +113,7 @@ export function PasswordForm() {
     try {
       await api.put("/auth/password", { currentPassword: form.current, newPassword: form.next });
       setForm({ current: "", next: "", confirm: "" });
-      setNote({ ok: true, text: "Password changed. Use the new one next time you log in." });
+      toast("Password changed. Use the new one next time you log in.");
     } catch (err) {
       setNote({ ok: false, text: getErrorMessage(err) });
     }

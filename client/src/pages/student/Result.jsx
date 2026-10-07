@@ -1,3 +1,4 @@
+import { toast } from "../../components/Toaster";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api, { getErrorMessage } from "../../api/axios";
@@ -53,8 +54,10 @@ export default function Result() {
     try {
       if (isOn) await api.delete(`/bookmarks/${questionId}`);
       else await api.post("/bookmarks", { questionId });
+      toast(isOn ? "Removed from bookmarks" : "Added to bookmarks", "info");
     } catch {
       setBookmarked((prev) => ({ ...prev, [questionId]: isOn })); // undo if it failed
+      toast("Could not update the bookmark. Try again.", "error");
     }
   };
 
