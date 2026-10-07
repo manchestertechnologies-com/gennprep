@@ -118,6 +118,11 @@ const listQuestions = async (req, res) => {
         if (isValidId(chapterId)) filter.chapterId = chapterId;
         if (isValidId(topicId)) filter.topicId = topicId;
         if (difficulty) filter.difficulty = difficulty;
+        const search = String(req.query.q || "").trim().slice(0, 100);
+        if (search) {
+            const rx = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+            filter.$or = [{ text: rx }, { tags: rx }];
+        }
         // Hide deleted (archived) questions unless asked for
         filter.status = status || { $ne: "archived" };
 
