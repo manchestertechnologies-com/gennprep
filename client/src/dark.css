@@ -83,3 +83,5 @@ html.dark .border-l-emerald-500{border-left-color:#10b981}
 html.dark .border-l-red-500{border-left-color:#ef4444}
 html.dark .border-l-slate-300{border-left-color:#475569}
 html.dark circle[stroke="#e2e8f0"]{stroke:#1e293b}
+html.dark .from-indigo-600 .bg-white{background-color:#fff}
+html.dark .from-indigo-600 .text-indigo-700{color:#4338ca}
