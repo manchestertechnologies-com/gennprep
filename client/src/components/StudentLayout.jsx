@@ -83,7 +83,7 @@ function Shell() {
               {l.label}
             </NavLink>
           ))}
-          {user.role === "admin" && (
+          {false && user.role === "admin" && (
             <NavLink to="/admin" className={sideLink}>
               <Icon path={ADMIN_ICON} />
               Admin
@@ -112,7 +112,7 @@ function Shell() {
         <div className="flex h-14 items-center gap-3 px-4">
           <Logo compact />
           <div className="ml-auto flex items-center gap-2">
-            {user.role === "admin" && (
+            {false && user.role === "admin" && (
               <Link to="/admin" className="hidden sm:block rounded-lg px-2 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100">Admin</Link>
             )}
             <ThemeToggle />
