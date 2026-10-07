@@ -13,7 +13,7 @@ export default function Landing({ loggedIn }) {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <Link to="/" className="flex items-center gap-2 font-bold">
             <img src="/favicon.svg" alt="" className="h-8 w-8" />
-            ExamPrep AI
+            ExamPrep <span className="bg-linear-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">AI</span>
           </Link>
           <nav className="flex items-center gap-1 text-sm sm:gap-2">
             <Link to="/login" className="rounded-lg px-3 py-2 font-medium text-slate-700 hover:bg-slate-100">Log in</Link>

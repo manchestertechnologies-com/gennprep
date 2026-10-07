@@ -57,7 +57,7 @@ function Shell() {
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center gap-4">
           <Link to="/dashboard" className="flex items-center gap-2 font-bold text-slate-900">
             <img src="/favicon.svg" alt="" className="w-7 h-7" />
-            <span>ExamPrep AI</span>
+            <span>ExamPrep <span className="bg-linear-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">AI</span></span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-1 ml-4" aria-label="Main">
