@@ -1,3 +1,4 @@
+import NotFound from "./pages/NotFound";
 import Profile from "./pages/student/Profile";
 import BulkUpload from "./pages/admin/BulkUpload";
 import Analytics from "./pages/student/Analytics";
@@ -69,7 +70,7 @@ export default function App() {
       <Route path="/admin/students" element={adminOnly(<ManageStudents />)} />
 
       {/* Any unknown URL goes back to the start */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

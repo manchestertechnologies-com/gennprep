@@ -1,3 +1,4 @@
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import Toaster from "./components/Toaster.jsx";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -16,7 +17,7 @@ createRoot(document.getElementById("root")).render(
         <WakeUpBanner />
         <ConfirmDialog />
         <Toaster />
-        <App />
+        <ErrorBoundary><App /></ErrorBoundary>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>

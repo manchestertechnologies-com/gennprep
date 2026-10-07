@@ -1,3 +1,4 @@
+import EmptyState from "../../components/EmptyState";
 import { toast } from "../../components/Toaster";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -123,7 +124,7 @@ export default function Result() {
       </div>
 
       <div className="mt-4 space-y-4">
-        {visible.length === 0 && <p className="text-sm text-slate-500">No questions in this group.</p>}
+        {visible.length === 0 && <EmptyState icon="search" title="Nothing here" text="No questions in this group. Try another filter." />}
         {visible.map((item) => (
           <ReviewCard
             key={item.questionId}

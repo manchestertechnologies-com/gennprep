@@ -1,3 +1,4 @@
+import EmptyState from "../../components/EmptyState";
 import MathText from "../../components/MathText";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -127,7 +128,7 @@ export default function Revise() {
 
                         <h2 className="font-semibold text-slate-900 mt-8">Your bookmarks</h2>
                         {bookmarks.length === 0 ? (
-                            <p className="text-sm text-slate-500 mt-2">No bookmarks yet.</p>
+                            <EmptyState icon="star" title="No bookmarks yet" text="Tap the star on any question in your results to save it here for revision." actionLabel="Go to my dashboard" actionTo="/dashboard" />
                         ) : (
                             <div className="mt-3 space-y-3">
                                 {bookmarks.map((b) => (
