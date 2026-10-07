@@ -1,3 +1,4 @@
+import ThemeToggle from "./ThemeToggle";
 import { Link, NavLink, Navigate, Outlet } from "react-router-dom";
 import { choiceKey } from "../pages/student/Welcome";
 import { useAuth } from "../context/AuthContext";
@@ -73,6 +74,7 @@ function Shell() {
           </nav>
 
           <div className="ml-auto flex items-center gap-3">
+            <ThemeToggle />
             <ExamPicker />
             <Link to="/profile" title="My profile" className="flex items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-slate-100"><span className="grid h-8 w-8 place-items-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">{user.name.trim().split(/\s+/).slice(0, 2).map((w) => w[0].toUpperCase()).join("")}</span><span className="hidden sm:block text-sm text-slate-600 max-w-32 truncate">{user.name}</span></Link>
             <button
