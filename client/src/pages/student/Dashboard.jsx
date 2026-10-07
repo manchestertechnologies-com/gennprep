@@ -4,7 +4,15 @@ import api, { getErrorMessage } from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
 import { useExam } from "../../context/ExamContext";
 import { DashboardSkeleton } from "../../components/Skeleton";
-import { ChapterList, RecentTests, RecommendedCard, StatsRow, WeeklyChart } from "../../components/DashboardWidgets";
+import { QuickActions, WelcomeBanner } from "../../components/DashboardHero";
+import { StatsRow, WeeklyChart } from "../../components/DashboardWidgets";
+import { ChapterList, RecentTests, RecommendedCard } from "../../components/DashboardLists";
+
+const STEPS = [
+  { title: "Pick a chapter", text: "Open Practice and choose any chapter or topic." },
+  { title: "Answer 10 questions", text: "You'll see the right answer and an explanation." },
+  { title: "Come back tomorrow", text: "Build a streak and watch your accuracy grow." },
+];
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -23,36 +31,38 @@ export default function Dashboard() {
 
   const examCode = exam?.code || "";
   const hasActivity = data && data.totals.attempted > 0;
+  const today = data?.last7Days?.[data.last7Days.length - 1];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Welcome back, {user.name}</h1>
-          <p className="text-slate-500 mt-1">Your {examCode} preparation at a glance</p>
-        </div>
-        <Link to="/practice" className="rounded-lg bg-indigo-600 text-white text-sm font-medium px-4 py-2.5 hover:bg-indigo-700">
-          Start practice
-        </Link>
-      </div>
+    <div className="max-w-6xl mx-auto px-4 py-6 md:py-8">
+      <WelcomeBanner name={user.name} examCode={examCode} today={today} />
+      <QuickActions wrongCount={data?.wrongQuestionsCount || 0} />
 
       {error && <div className="mt-6 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-3">{error}</div>}
-
-      {!data && !error && (
-        <DashboardSkeleton />
-      )}
-
-      {data && <StatsRow totals={data.totals} streak={data.streak} />}
+      {!data && !error && <DashboardSkeleton />}
 
       {data && !hasActivity && (
-        <div className="mt-6 rounded-xl bg-white border border-slate-200 p-8 text-center">
-          <p className="font-semibold text-slate-900">No practice yet for {examCode}</p>
-          <p className="text-slate-500 mt-1 text-sm">Your charts and weak chapters will appear here after your first practice session.</p>
-        </div>
+        <section className="mt-6 rounded-2xl bg-white border border-slate-200 p-6 md:p-8">
+          <h2 className="text-xl font-bold text-slate-900">Let's get started with {examCode}</h2>
+          <p className="mt-1 text-slate-500">Your charts, streak and weak chapters will appear here after your first session.</p>
+          <ol className="mt-6 grid gap-4 md:grid-cols-3">
+            {STEPS.map((s, i) => (
+              <li key={s.title} className="rounded-xl bg-slate-50 p-4">
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-indigo-600 text-sm font-bold text-white">{i + 1}</span>
+                <p className="mt-3 font-semibold text-slate-900">{s.title}</p>
+                <p className="mt-1 text-sm text-slate-500">{s.text}</p>
+              </li>
+            ))}
+          </ol>
+          <Link to="/practice" className="mt-6 inline-block rounded-lg bg-indigo-600 text-white text-sm font-semibold px-5 py-2.5 hover:bg-indigo-700">
+            Start my first practice
+          </Link>
+        </section>
       )}
 
       {hasActivity && (
-        <div>
+        <>
+          <StatsRow totals={data.totals} streak={data.streak} />
           <div className="grid lg:grid-cols-3 gap-4 mt-4">
             <div className="lg:col-span-2">
               <WeeklyChart days={data.last7Days} />
@@ -61,15 +71,10 @@ export default function Dashboard() {
           </div>
           <div className="grid md:grid-cols-2 gap-4 mt-4">
             <ChapterList title="Weak chapters" chapters={data.weakChapters} emptyText="No weak chapters yet." tone="weak" />
-            <ChapterList
-              title="Strong chapters"
-              chapters={data.strongChapters}
-              emptyText="Reach 80% accuracy in a chapter to see it here."
-              tone="strong"
-            />
+            <ChapterList title="Strong chapters" chapters={data.strongChapters} emptyText="Reach 80% accuracy in a chapter to see it here." tone="strong" />
           </div>
-          <RecentTests tests={data.recentTests} />
-        </div>
+          {data.recentTests.length > 0 && <RecentTests tests={data.recentTests} />}
+        </>
       )}
     </div>
   );
