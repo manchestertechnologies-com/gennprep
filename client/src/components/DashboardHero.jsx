@@ -47,7 +47,8 @@ export function WelcomeBanner({ name, examCode, today }) {
     }
   };
   const done = today?.attempted || 0;
-  const firstName = (name || "").split(" ")[0];
+  const first = (name || "").trim().split(" ")[0];
+  const firstName = first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
 
   return (
     <section className="rounded-2xl bg-linear-to-br from-indigo-600 via-indigo-600 to-violet-600 p-6 md:p-8 text-white shadow-lg shadow-indigo-200 flex flex-col md:flex-row md:items-center gap-6">
