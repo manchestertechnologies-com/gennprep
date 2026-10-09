@@ -17,6 +17,8 @@ const FIELD = {
 };
 const norm = (h) => String(h).toLowerCase().replace(/[^a-z0-9]/g, "");
 
+import { convertRow, isSupabaseExport } from "./supabaseFormat";
+
 // The Excel library is big, so it only loads when needed
 const loadXlsx = () => import("xlsx");
 
@@ -65,6 +67,8 @@ export async function readSheet(file) {
   const wb = XLSX.read(await file.arrayBuffer(), { type: "array", codepage: 65001 });
   const name = wb.SheetNames.find((n) => n.toLowerCase() === "questions") || wb.SheetNames[0];
   const raw = XLSX.utils.sheet_to_json(wb.Sheets[name], { defval: "", raw: false });
+  // Export from the question website (Supabase): convert each row
+  if (raw.length && isSupabaseExport(Object.keys(raw[0]))) return raw.map((r) => convertRow(r, r.__rowNum__ + 1));
   const rows = [];
   raw.forEach((r) => {
     const row = { rowNumber: r.__rowNum__ + 1 }; // the row number you see in Excel

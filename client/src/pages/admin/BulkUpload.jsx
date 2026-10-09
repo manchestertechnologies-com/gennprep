@@ -1,4 +1,3 @@
-import { toast } from "../../components/Toaster";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api, { getErrorMessage } from "../../api/axios";
@@ -7,7 +6,7 @@ import { downloadTemplate, readSheet } from "../../utils/bulkSheet";
 import BulkResultsTable from "../../components/BulkResultsTable";
 
 const CHUNK = 100; // rows sent to the server at a time
-const MAX_ROWS = 2000;
+const MAX_ROWS = 20000;
 const box = "bg-white rounded-xl border border-slate-200 p-5";
 const btn = "rounded-lg text-sm font-medium px-4 py-2 disabled:opacity-50";
 
@@ -16,7 +15,7 @@ export default function BulkUpload() {
   const [examId, setExamId] = useState("");
   const [publish, setPublish] = useState(true);
   const [fileName, setFileName] = useState("");
-  const [rows, setRows] = useState([]);
+  const [allRows, setRows] = useState([]);
   const [results, setResults] = useState(null); // rowNumber -> { ok, error }
   const [added, setAdded] = useState(null);
   const [busy, setBusy] = useState("");
@@ -34,6 +33,10 @@ export default function BulkUpload() {
   }, []);
 
   const exam = exams.find((e) => e._id === examId);
+  // Files from the question website say which exams each question is for: keep only this exam's
+  const rows = allRows.filter((r) => !r.exams || r.exams.length === 0 || r.exams.includes(exam?.code));
+  const otherExams = allRows.length - rows.length;
+  const sendable = rows.filter((r) => !r.skip);
   const clearResults = () => {
     setResults(null);
     setAdded(null);
@@ -77,19 +80,20 @@ export default function BulkUpload() {
     const map = {};
     let total = 0;
     try {
-      for (let i = 0; i < rows.length; i += CHUNK) {
-        setBusy(`${dryRun ? "Checking" : "Importing"} rows ${i + 1}-${Math.min(i + CHUNK, rows.length)} of ${rows.length}...`);
+      for (let i = 0; i < sendable.length; i += CHUNK) {
+        setBusy(`${dryRun ? "Checking" : "Importing"} rows ${i + 1}-${Math.min(i + CHUNK, sendable.length)} of ${sendable.length}...`);
         const res = await api.post("/admin/questions/bulk", {
           examId,
           dryRun,
           status: publish ? "published" : "draft",
-          rows: rows.slice(i, i + CHUNK),
+          createTopics: true,
+          rows: sendable.slice(i, i + CHUNK),
         });
         res.data.results.forEach((r) => (map[r.rowNumber] = r));
         total += res.data.added;
       }
       setResults(map);
-      if (!dryRun) { setAdded(total); toast(`${total} questions added`); }
+      if (!dryRun) setAdded(total);
     } catch (err) {
       setError(getErrorMessage(err));
     }
@@ -123,7 +127,7 @@ export default function BulkUpload() {
           <p className="mt-1 text-sm text-slate-500">Excel (.xlsx) or CSV. Up to {MAX_ROWS} questions at a time.</p>
           <label className="mt-4 flex cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-slate-300 px-4 py-4 text-sm text-slate-600 hover:border-indigo-400 hover:bg-indigo-50">
             <input type="file" accept=".xlsx,.xls,.csv" onChange={pickFile} className="hidden" />
-            {fileName ? <span><b>{fileName}</b> - {rows.length} questions found. Click to choose another.</span> : "Click to choose a file"}
+            {fileName ? <span><b>{fileName}</b> - {rows.length} questions for {exam?.code}{otherExams > 0 ? ` (${otherExams} are for other exams)` : ""}. Click to choose another.</span> : "Click to choose a file"}
           </label>
           <label className="mt-3 flex items-center gap-2 text-sm text-slate-700">
             <input type="checkbox" checked={publish} onChange={(e) => setPublish(e.target.checked)} />

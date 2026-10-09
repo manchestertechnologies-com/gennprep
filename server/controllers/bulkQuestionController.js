@@ -15,6 +15,9 @@ const TYPES = {
   numerical: "numerical", numeric: "numerical", integer: "numerical",
 };
 const DIFFICULTIES = ["easy", "medium", "hard"];
+// Different names for the same subject
+const SUBJECT_ALIASES = { maths: ["mathematics", "math"], mathematics: ["maths", "math"], math: ["maths", "mathematics"] };
+const slugify = (s) => String(s).toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 const SOURCES = ["original", "pyq", "ncert"];
 
 // Loads the exam's syllabus once, so every row can be matched by name
@@ -34,11 +37,16 @@ const loadSyllabus = async (examId) => {
 
 // Turns one spreadsheet row into question data, or returns { error }
 const buildQuestion = (row, syllabus, extra) => {
-  const subject = syllabus.subjects.get(key(row.subject));
+  const names = [key(row.subject), ...(SUBJECT_ALIASES[key(row.subject)] || [])];
+  const subject = names.map((n) => syllabus.subjects.get(n)).find(Boolean);
   if (!subject) return { error: `Subject "${clean(row.subject)}" not found in this exam` };
   const chapter = syllabus.chapters.get(subject._id + "|" + key(row.chapter));
   if (!chapter) return { error: `Chapter "${clean(row.chapter)}" not found in ${subject.name}` };
-  const topic = syllabus.topics.get(chapter._id + "|" + key(row.topic));
+  let topic = syllabus.topics.get(chapter._id + "|" + key(row.topic));
+  if (!topic && extra.createTopics && clean(row.topic)) {
+    // New topic: it is created when the questions are imported
+    topic = { _id: null, newKey: chapter._id + "|" + key(row.topic), name: clean(row.topic), examId: chapter.examId, subjectId: chapter.subjectId, chapterId: chapter._id };
+  }
   if (!topic) return { error: `Topic "${clean(row.topic)}" not found in ${chapter.name}` };
 
   const type = TYPES[key(row.type)];
@@ -56,8 +64,11 @@ const buildQuestion = (row, syllabus, extra) => {
     explanation: { text: clean(row.explanation) },
     difficulty,
     tags: clean(row.tags) ? clean(row.tags).split(",").map((t) => t.trim()).filter(Boolean) : [],
-    ...extra,
+    status: extra.status,
+    createdBy: extra.createdBy,
+    updatedBy: extra.updatedBy,
   };
+  if (topic.newKey) data.newTopic = topic;
 
   if (type === "numerical") {
     const value = Number(clean(row.numericalAnswer));
@@ -76,7 +87,7 @@ const buildQuestion = (row, syllabus, extra) => {
   }
 
   const error = validateQuestion(data);
-  return error ? { error } : { data };
+  return error ? { error } : { data, note: topic.newKey ? `New topic "${topic.name}" will be added` : null };
 };
 
 // POST /api/admin/questions/bulk
@@ -91,7 +102,7 @@ const bulkImport = async (req, res) => {
     if (rows.length > MAX_ROWS) return res.status(400).json({ message: `Send at most ${MAX_ROWS} rows at a time` });
 
     const syllabus = await loadSyllabus(examId);
-    const extra = { status, createdBy: req.user._id, updatedBy: req.user._id };
+    const extra = { status, createdBy: req.user._id, updatedBy: req.user._id, createTopics: req.body.createTopics !== false };
     const built = rows.map((row) => ({ rowNumber: row.rowNumber, ...buildQuestion(row, syllabus, extra) }));
 
     // Skip questions that already exist in the same topic (e.g. the same file uploaded twice)
@@ -103,7 +114,7 @@ const bulkImport = async (req, res) => {
     const inFile = new Set();
     for (const b of built) {
       if (!b.data) continue;
-      const k = b.data.topicId + "|" + b.data.text;
+      const k = (b.data.topicId || b.data.newTopic?.newKey) + "|" + b.data.text;
       if (inDatabase.has(k)) b.error = "Already exists (same question in this topic)";
       else if (inFile.has(k)) b.error = "Same question appears twice in this file";
       else inFile.add(k);
@@ -113,13 +124,26 @@ const bulkImport = async (req, res) => {
     const good = built.filter((b) => b.data);
     let added = 0;
     if (!dryRun && good.length) {
+      // Create any new topics first (once each), then link the questions to them
+      const created = new Map();
+      for (const b of good) {
+        const t = b.data.newTopic;
+        if (!t) continue;
+        if (!created.has(t.newKey)) {
+          const count = await Topic.countDocuments({ chapterId: t.chapterId });
+          const doc = await Topic.create({ examId: t.examId, subjectId: t.subjectId, chapterId: t.chapterId, name: t.name, slug: slugify(t.name) || "topic-" + Date.now(), order: count + 1 });
+          created.set(t.newKey, doc._id);
+        }
+        b.data.topicId = created.get(t.newKey);
+        delete b.data.newTopic;
+      }
       const inserted = await Question.insertMany(good.map((b) => b.data), { ordered: false });
       added = inserted.length;
     }
 
     res.json({
       added,
-      results: built.map((b) => ({ rowNumber: b.rowNumber, ok: !b.error, error: b.error || null })),
+      results: built.map((b) => ({ rowNumber: b.rowNumber, ok: !b.error, error: b.error || null, note: b.note || null })),
     });
   } catch (error) {
     console.error("bulkImport error:", error.message);

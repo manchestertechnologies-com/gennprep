@@ -20,8 +20,9 @@ export default function BulkResultsTable({ rows, results, more }) {
                 <td className="py-2 pr-3 text-slate-800 max-w-md">{(r.question || "").slice(0, 120)}</td>
                 <td className="py-2 pr-3 text-slate-500">{r.chapter} / {r.topic}</td>
                 <td className="py-2">
-                  {!res && <span className="text-slate-400">Not checked</span>}
-                  {res?.ok && <span className="font-medium text-emerald-700">Ready</span>}
+                  {r.skip && <span className="text-red-700">Skipped: {r.skip}</span>}
+                  {!res && !r.skip && <span className="text-slate-400">Not checked</span>}
+                  {res?.ok && <span className="font-medium text-emerald-700">Ready{res.note ? <span className="block text-xs font-normal text-slate-500">{res.note}</span> : null}</span>}
                   {res && !res.ok && <span className="text-red-700">{res.error}</span>}
                 </td>
               </tr>

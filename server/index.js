@@ -1,3 +1,4 @@
+require("dns").setServers(["8.8.8.8", "1.1.1.1"]); // fixes Jio Wi-Fi database lookup
 require("dotenv").config();
 const express = require("express");
 const connectDB = require("./config/db");
