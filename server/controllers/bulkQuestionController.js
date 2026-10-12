@@ -7,7 +7,7 @@ const { validateQuestion } = require("./questionController");
 
 const MAX_ROWS = 100; // per request; the website sends big files in parts
 const clean = (v) => (v === undefined || v === null ? "" : String(v).trim());
-const key = (v) => clean(v).toLowerCase().replace(/\s+/g, " ");
+const key = (v) => clean(v).toLowerCase().replace(/[\u2018\u2019'`]/g, "").replace(/&/g, " and ").replace(/[^a-z0-9]+/g, " ").trim();
 
 const TYPES = {
   "": "mcq_single", single: "mcq_single", mcq_single: "mcq_single",
@@ -131,7 +131,8 @@ const bulkImport = async (req, res) => {
         if (!t) continue;
         if (!created.has(t.newKey)) {
           const count = await Topic.countDocuments({ chapterId: t.chapterId });
-          const doc = await Topic.create({ examId: t.examId, subjectId: t.subjectId, chapterId: t.chapterId, name: t.name, slug: slugify(t.name) || "topic-" + Date.now(), order: count + 1 });
+          const slug = slugify(t.name) || "topic-" + Date.now();
+          const doc = (await Topic.findOne({ chapterId: t.chapterId, slug })) || (await Topic.create({ examId: t.examId, subjectId: t.subjectId, chapterId: t.chapterId, name: t.name, slug, order: count + 1 }));
           created.set(t.newKey, doc._id);
         }
         b.data.topicId = created.get(t.newKey);

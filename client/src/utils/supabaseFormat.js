@@ -37,7 +37,7 @@ export function convertRow(r, rowNumber) {
   const base = { rowNumber, exams, subject: clean(r.subject), chapter: clean(r.chapter), topic: clean(r.topic), explanation: clean(r.solution_text), tags: type };
 
   if (type === "numerical" || type === "integer") {
-    const answer = clean(r.num_answer).replace(/[$\s]/g, "");
+    const answer = (clean(r.num_answer) || clean(r.correct_option)).replace(/[$\s]/g, "");
     if (!answer || Number.isNaN(Number(answer))) return { ...base, question, skip: "Numerical answer is not a number (written answer), can't be marked automatically" };
     return { ...base, question, type: "numerical", numericalAnswer: answer };
   }

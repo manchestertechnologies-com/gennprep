@@ -167,7 +167,7 @@ export default function QuestionForm() {
 
                     <Field label="Question">
                         <textarea rows={4} value={form.text} onChange={(e) => update("text", e.target.value)} required className={inputClass} />
-{form.text.includes("$") && <div className="mt-2 rounded-lg bg-indigo-50 px-3 py-2 text-sm"><span className="text-xs font-semibold text-indigo-700">Preview: </span><MathText text={form.text} /></div>}
+{/\$|\{\{IMG::/.test(form.text) && <div className="mt-2 rounded-lg bg-indigo-50 px-3 py-2 text-sm"><span className="text-xs font-semibold text-indigo-700">Preview: </span><MathText text={form.text} /></div>}
                     </Field>
 
                     <div>
@@ -186,7 +186,7 @@ export default function QuestionForm() {
                               <QuestionImages images={form.images} onChange={(imgs) => update("images", imgs)} />
 <Field label="Explanation (shown after the test)">
                         <textarea rows={3} value={form.explanation} onChange={(e) => update("explanation", e.target.value)} className={inputClass} />
-{form.explanation.includes("$") && <div className="mt-2 rounded-lg bg-indigo-50 px-3 py-2 text-sm"><span className="text-xs font-semibold text-indigo-700">Preview: </span><MathText text={form.explanation} /></div>}
+{/\$|\{\{IMG::/.test(form.explanation) && <div className="mt-2 rounded-lg bg-indigo-50 px-3 py-2 text-sm"><span className="text-xs font-semibold text-indigo-700">Preview: </span><MathText text={form.explanation} /></div>}
                     </Field>
 
                     <div className="grid sm:grid-cols-3 gap-3">

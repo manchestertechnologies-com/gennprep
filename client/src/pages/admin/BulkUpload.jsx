@@ -168,6 +168,22 @@ export default function BulkUpload() {
             )}
           </div>
 
+          {results && (() => {
+            const c = {};
+            rows.forEach((r) => {
+              const res = results[r.rowNumber];
+              const why = r.skip ? "Skipped: " + r.skip : res && !res.ok ? res.error : null;
+              if (why) c[why] = (c[why] || 0) + 1;
+            });
+            const top = Object.entries(c).sort((a, b) => b[1] - a[1]).slice(0, 25);
+            return top.length ? (
+              <ul className="mt-4 space-y-1 rounded-lg border border-slate-200 p-3 text-sm text-slate-600">
+                <li className="font-semibold text-slate-800">Problems by reason (top 25)</li>
+                {top.map(([w, n]) => <li key={w}><b>{n}</b> × {w}</li>)}
+              </ul>
+            ) : null;
+          })()}
+
           <BulkResultsTable rows={shown} results={results} more={rows.length > shown.length && !onlyProblems} />
         </div>
       )}

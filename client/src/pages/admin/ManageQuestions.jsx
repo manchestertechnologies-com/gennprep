@@ -1,3 +1,4 @@
+import MathText from "../../components/MathText";
 import { askConfirm } from "../../components/ConfirmDialog";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -93,7 +94,7 @@ export default function ManageQuestions() {
                     {data.questions.map((q) => (
                         <article key={q._id} className="bg-white rounded-xl border border-slate-200 p-4 flex gap-4 items-start">
                             <div className="flex-1 min-w-0">
-                                <p className="text-slate-900 line-clamp-2">{q.text}</p>
+                                <MathText as="div" className="text-slate-900 whitespace-pre-line" text={q.text} />
                                 <div className="flex flex-wrap gap-2 mt-2 text-xs">
                                     <span className={`px-2 py-0.5 rounded-md font-medium ${STATUS_STYLES[q.status] || ""}`}>{q.status}</span>
                                     <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 capitalize">{q.difficulty}</span>

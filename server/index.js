@@ -13,7 +13,7 @@ const testRoutes = require("./routes/testRoutes"); // NEW
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(express.json());
+app.use(express.json({ limit: "5mb" }));
 
 app.get("/", (req, res) => {
     res.send("ExamPrep AI API is running. Try /api/health");
