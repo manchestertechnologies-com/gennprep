@@ -34,7 +34,7 @@ export function convertRow(r, rowNumber) {
   const exams = parseJson(r.exams, []).map((e) => String(e).toUpperCase());
   let question = clean(r.question);
   let options = [r.opt_a, r.opt_b, r.opt_c, r.opt_d].map(clean);
-  const base = { rowNumber, exams, subject: clean(r.subject), chapter: clean(r.chapter), topic: clean(r.topic), explanation: clean(r.solution_text), tags: type };
+  const base = { rowNumber, exams, subject: clean(r.subject), chapter: clean(r.chapter), topic: clean(r.topic), explanation: clean(r.solution_text).replace(/\s*\[QBP_[A-Z_]+:[^\]]*\]/g, "").trim(), difficulty: ["easy", "medium", "hard"].find((d) => d === ((clean(r.solution_text).match(/\[QBP_DIFFICULTY:\s*([A-Za-z]+)/) || [])[1] || "").toLowerCase()) || "", tags: type };
 
   if (type === "numerical" || type === "integer") {
     const answer = (clean(r.num_answer) || clean(r.correct_option)).replace(/[$\s]/g, "");
