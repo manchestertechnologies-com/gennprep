@@ -47,4 +47,10 @@ router.delete("/tests/:id", deleteTest);
 router.get("/students", admin.listStudents);
 router.put("/students/:id/status", admin.setStudentStatus);
 
+const { questionBreakdown } = require("../controllers/questionStatsController");
+router.get("/stats/questions", questionBreakdown);
+
+const { syllabusFilters } = require("../controllers/questionStatsController");
+router.get("/syllabus-filters", syllabusFilters);
+
 module.exports = router;

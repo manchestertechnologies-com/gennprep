@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api, { getErrorMessage } from "../../api/axios";
 
-const COUNTS = [5, 10, 20];
+const COUNTS = [10, 20, 30];
 
 const pillClass = (selected) =>
     `px-4 py-2 rounded-lg border text-sm font-medium ${selected
@@ -18,7 +18,7 @@ export default function Revise() {
 
     const [wrongCount, setWrongCount] = useState(0);
     const [bookmarks, setBookmarks] = useState([]);
-    const [count, setCount] = useState(10);
+    const [count, setCount] = useState(20);
     const [loading, setLoading] = useState(true);
     const [starting, setStarting] = useState(""); // "wrong", "bookmarks" or ""
     const [error, setError] = useState("");

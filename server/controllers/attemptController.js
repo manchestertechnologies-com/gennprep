@@ -20,7 +20,7 @@ const startPractice = async (req, res) => {
         if (!chapter) return res.status(404).json({ message: "Chapter not found" });
         const exam = await Exam.findById(chapter.examId);
 
-        const size = Math.min(Math.max(parseInt(count) || 10, 1), 50);
+        const size = Math.min(Math.max(parseInt(count) || 10, 1), 60);
         const match = { chapterId: toObjectId(chapterId), status: "published" };
 
         const validTopicIds = (Array.isArray(topicIds) ? topicIds : [topicIds]).filter(isValidId);

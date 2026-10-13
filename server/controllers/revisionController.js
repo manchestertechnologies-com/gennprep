@@ -22,7 +22,7 @@ const shuffle = (list) => {
 
 // Shared by both practice types: builds an attempt from a list of question ids
 const createPracticeFromIds = async (req, res, exam, questionIds, mode) => {
-    const size = Math.min(Math.max(parseInt(req.body.count) || 10, 1), 50);
+    const size = Math.min(Math.max(parseInt(req.body.count) || 10, 1), 60);
     const pickedIds = shuffle(questionIds.map(String)).slice(0, size);
 
     const questions = await Question.find({ _id: { $in: pickedIds }, status: "published" })

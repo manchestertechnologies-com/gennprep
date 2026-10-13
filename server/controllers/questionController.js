@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Question = require("../models/Question");
 const Topic = require("../models/Topic");
+const Chapter = require("../models/Chapter");
 
 const isValidId = (id) => mongoose.isValidObjectId(id);
 
@@ -107,22 +108,47 @@ const createQuestion = async (req, res) => {
     }
 };
 
-// GET /api/admin/questions?chapterId=...&difficulty=easy&page=1&limit=20
+// GET /api/admin/questions?examId=&subjectId=&classLevel=&chapterId=&topicId=&qtype=&difficulty=&status=&q=&page=1&limit=20
+const QTYPE_RULES = {
+    assertion: { $or: [{ tags: /assert/i }, { text: /Assertion\s*(\(A\))?\s*:/i }] },
+    match: { $or: [{ tags: /match/i }, { text: /(column|list)[\s\-–]*(I|1)\b/i }] },
+    statement: { text: /Statement[\s\-–]*(I|1)\b/i },
+};
 const listQuestions = async (req, res) => {
     try {
-        const { examId, subjectId, chapterId, topicId, difficulty, status } = req.query;
+        const { examId, subjectId, chapterId, topicId, difficulty, status, classLevel, qtype } = req.query;
 
         const filter = {};
+        const and = [];
         if (isValidId(examId)) filter.examId = examId;
         if (isValidId(subjectId)) filter.subjectId = subjectId;
         if (isValidId(chapterId)) filter.chapterId = chapterId;
+        else if (classLevel === "11" || classLevel === "12") {
+            // Only chapters of that class
+            const chapterFilter = { classLevel };
+            if (filter.examId) chapterFilter.examId = filter.examId;
+            if (filter.subjectId) chapterFilter.subjectId = filter.subjectId;
+            const ids = await Chapter.find(chapterFilter).distinct("_id");
+            filter.chapterId = { $in: ids };
+        }
         if (isValidId(topicId)) filter.topicId = topicId;
         if (difficulty) filter.difficulty = difficulty;
+
+        // Question type
+        if (qtype === "numerical") filter.type = "numerical";
+        else if (qtype === "multi") filter.type = "mcq_multi";
+        else if (QTYPE_RULES[qtype]) and.push(QTYPE_RULES[qtype]);
+        else if (qtype === "mcq") {
+            filter.type = "mcq_single";
+            and.push({ $nor: Object.values(QTYPE_RULES).flatMap((r) => r.$or || [r]) });
+        }
+
         const search = String(req.query.q || "").trim().slice(0, 100);
         if (search) {
             const rx = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
-            filter.$or = [{ text: rx }, { tags: rx }];
+            and.push({ $or: [{ text: rx }, { tags: rx }] });
         }
+        if (and.length) filter.$and = and;
         // Hide deleted (archived) questions unless asked for
         filter.status = status || { $ne: "archived" };
 
@@ -144,7 +170,6 @@ const listQuestions = async (req, res) => {
         res.status(500).json({ message: "Something went wrong on the server" });
     }
 };
-
 // GET /api/admin/questions/:id
 const getQuestion = async (req, res) => {
     try {

@@ -1,3 +1,4 @@
+import QuestionBreakdown from "../../components/QuestionBreakdown";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api, { getErrorMessage } from "../../api/axios";
@@ -62,6 +63,7 @@ export default function AdminDashboard() {
                     </Link>
                 ))}
             </div>
-        </AdminLayout>
+        <QuestionBreakdown />
+      </AdminLayout>
     );
 }

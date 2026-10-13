@@ -1,0 +1,160 @@
+/* ManchesterTech brand theme: neutral black with gold (matches manchestertech site).
+   It recolours the whole site by changing Tailwind's colour variables. */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap");
+
+:root {
+  color-scheme: dark;
+  --brand-bg: #0a0a0a;
+  --brand-gold: #d4b26a;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --font-display: "Poppins", "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* "white" cards become charcoal cards */
+  --color-white: #141414;
+
+  /* Greys: neutral dark scale (50 = background, 900 = brightest text) */
+  --color-slate-50: #0f0f0f;
+  --color-slate-100: #1a1a1a;
+  --color-slate-200: #262626;
+  --color-slate-300: #333333;
+  --color-slate-400: #737373;
+  --color-slate-500: #9a9a9a;
+  --color-slate-600: #b3b3b3;
+  --color-slate-700: #d1d1d1;
+  --color-slate-800: #e6e6e6;
+  --color-slate-900: #fafafa;
+  --color-slate-950: #ffffff;
+  --color-gray-50: #0f0f0f;
+  --color-gray-100: #1a1a1a;
+  --color-gray-200: #262626;
+  --color-gray-300: #333333;
+  --color-gray-400: #737373;
+  --color-gray-500: #9a9a9a;
+  --color-gray-600: #b3b3b3;
+  --color-gray-700: #d1d1d1;
+  --color-gray-800: #e6e6e6;
+  --color-gray-900: #fafafa;
+
+  /* Main colour: gold */
+  --color-indigo-50: #1c1913;
+  --color-indigo-100: #26211a;
+  --color-indigo-200: #3d3424;
+  --color-indigo-300: #7a6640;
+  --color-indigo-400: #c9a862;
+  --color-indigo-500: #d4b26a;
+  --color-indigo-600: #d4b26a;
+  --color-indigo-700: #e0c283;
+  --color-indigo-800: #ead29e;
+  --color-indigo-900: #f2e2bb;
+  --color-violet-500: #d4b26a;
+  --color-violet-600: #d4b26a;
+  --color-purple-500: #d4b26a;
+  --color-purple-600: #d4b26a;
+
+  /* Status colours for a dark background */
+  --color-red-50: #241313;
+  --color-red-100: #331a1a;
+  --color-red-600: #f08a80;
+  --color-red-700: #f2a39b;
+  --color-green-50: #0f1f17;
+  --color-green-700: #7fd6a2;
+  --color-emerald-50: #0f1f17;
+  --color-emerald-500: #3fbf7f;
+  --color-emerald-600: #57cc8f;
+  --color-emerald-700: #7fd6a2;
+  --color-amber-50: #231c10;
+  --color-amber-600: #e3b55c;
+  --color-amber-700: #e8c37a;
+}
+
+html, body {
+  background-color: var(--brand-bg);
+  color: var(--color-slate-700);
+  font-family: var(--font-sans);
+}
+
+/* Very soft gold glow at the top left, like the company site */
+body {
+  background-image: radial-gradient(800px 480px at 8% -8%, rgba(212, 178, 106, 0.07), transparent 60%);
+  background-attachment: fixed;
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
+  color: var(--color-slate-950);
+}
+
+/* Cards: charcoal with a thin border */
+.bg-white { background-color: #141414; }
+.border-slate-200 { border-color: #262626; }
+
+/* Diagrams keep a white background so black lines stay visible */
+img[alt="Diagram"] { background: #ffffff !important; }
+
+/* Gold buttons: dark text and a soft glow */
+.bg-indigo-600, .bg-indigo-500 { color: #0a0a0a !important; font-weight: 600; box-shadow: 0 8px 28px -12px rgba(212, 178, 106, 0.55); }
+.bg-indigo-600:hover, .bg-indigo-700 { background-color: #e0c283 !important; color: #0a0a0a !important; }
+
+/* Form fields */
+input, select, textarea { color: var(--color-slate-900); background-color: #141414; }
+input::placeholder, textarea::placeholder { color: var(--color-slate-400); }
+select option { background: #141414; color: #fafafa; }
+
+/* Selection and keyboard focus in gold */
+::selection { background: rgba(212, 178, 106, 0.35); color: #fff; }
+:focus-visible { outline: 2px solid var(--brand-gold); outline-offset: 2px; }
+/* ---------- Gold highlight (border + soft glow), like the company cards ---------- */
+:root {
+  --gold-line: rgba(212, 178, 106, 0.45);
+  --gold-glow: 0 0 0 1px rgba(212, 178, 106, 0.10), 0 0 36px -8px rgba(212, 178, 106, 0.40);
+}
+
+/* Cards: subtle dark gradient */
+.bg-white.rounded-xl, .bg-white.rounded-2xl, .bg-white.rounded-lg {
+  background: linear-gradient(180deg, #171717 0%, #111111 100%);
+}
+
+/* Cards light up on hover */
+.rounded-xl.border, .rounded-2xl.border {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.rounded-xl.border:hover, .rounded-2xl.border:hover {
+  border-color: var(--gold-line);
+  box-shadow: var(--gold-glow);
+}
+
+/* Selected tab or menu item (the page you are on) */
+a[aria-current="page"], [aria-selected="true"], [aria-pressed="true"] {
+  border: 1px solid var(--gold-line) !important;
+  box-shadow: var(--gold-glow);
+  background: linear-gradient(180deg, rgba(212, 178, 106, 0.12), rgba(212, 178, 106, 0.04)) !important;
+  color: #e0c283 !important;
+}
+
+/* Highlighted items (selected answer, active filters, chosen subject) */
+.bg-indigo-50 {
+  border-color: var(--gold-line) !important;
+  box-shadow: var(--gold-glow);
+}
+.border-indigo-500, .border-indigo-600 {
+  box-shadow: var(--gold-glow);
+}
+
+/* Icons in gold boxes, like the calendar icon */
+.bg-indigo-100 { background-color: rgba(212, 178, 106, 0.14) !important; color: #d4b26a; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rounded-xl.border, .rounded-2xl.border { transition: none; }
+}
+
+/* Leftover purple shades become gold too */
+:root {
+  --color-violet-50: #1c1913; --color-violet-100: #26211a; --color-violet-200: #3d3424; --color-violet-300: #7a6640;
+  --color-violet-400: #c9a862; --color-violet-700: #e0c283; --color-violet-800: #ead29e; --color-violet-900: #f2e2bb;
+  --color-purple-50: #1c1913; --color-purple-100: #26211a; --color-purple-200: #3d3424; --color-purple-300: #7a6640;
+  --color-purple-400: #c9a862; --color-purple-700: #e0c283; --color-purple-800: #ead29e; --color-purple-900: #f2e2bb;
+  --color-fuchsia-500: #d4b26a; --color-fuchsia-600: #d4b26a;
+  --color-blue-500: #d4b26a; --color-blue-600: #d4b26a;
+}

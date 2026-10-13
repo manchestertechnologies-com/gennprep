@@ -8,7 +8,7 @@ const DIFFICULTIES = [
     { value: "medium", label: "Medium" },
     { value: "hard", label: "Hard" },
 ];
-const COUNTS = [5, 10, 20, 30];
+const COUNTS = [10, 20, 30];
 
 // Style for the choice buttons: highlighted when selected
 const pillClass = (selected) =>
@@ -27,7 +27,7 @@ export default function PracticeSetup() {
     const [chapters, setChapters] = useState([]);
     const [chapterId, setChapterId] = useState("");
     const [difficulty, setDifficulty] = useState("any");
-    const [count, setCount] = useState(10);
+    const [count, setCount] = useState(20);
     const [loadingChapters, setLoadingChapters] = useState(false);
     const [starting, setStarting] = useState(false);
     const [error, setError] = useState("");
