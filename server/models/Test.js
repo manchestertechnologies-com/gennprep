@@ -41,6 +41,8 @@ const testSchema = new mongoose.Schema(
             default: "published",
         },
         createdBy: { type: ObjectId, ref: "User" },
+        // Set when a student made this test for themselves (not shown to other students)
+        ownerId: { type: ObjectId, ref: "User" },
         stats: {
             attempts: { type: Number, default: 0 },
             topScore: { type: Number, default: null },

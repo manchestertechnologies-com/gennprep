@@ -217,4 +217,125 @@ const startTest = async (req, res) => {
     }
 };
 
-module.exports = { createTest, listTestsAdmin, deleteTest, listTests, startTest };
+// ---------- Student-made mock tests ----------
+
+// The real paper pattern for each exam. KCET has two streams.
+const PATTERNS = {
+    NEET: { minutes: 180, sections: [["physics", 45], ["chemistry", 45], ["biology", 90]] },
+    JEE: { minutes: 180, sections: [["physics", 25], ["chemistry", 25], ["mathematics", 25]] },
+    KCET_PCM: { minutes: 240, sections: [["physics", 60], ["chemistry", 60], ["mathematics", 60]] },
+    KCET_PCB: { minutes: 240, sections: [["physics", 60], ["chemistry", 60], ["biology", 60]] },
+};
+const subjectKey = (name) => {
+    const k = String(name || "").toLowerCase().replace(/[^a-z]/g, "");
+    return k === "maths" || k === "math" ? "mathematics" : k;
+};
+const patternFor = (code, stream) => {
+    if (code === "KCET") return { key: stream === "PCB" ? "KCET_PCB" : "KCET_PCM", label: stream === "PCB" ? "KCET (PCB)" : "KCET (PCM)" };
+    return { key: code, label: code };
+};
+
+// STUDENT: POST /api/tests/generate   Body: { examId, stream?: "PCM" | "PCB" }
+// Makes a fresh full mock test from random published questions and starts it.
+const generateMock = async (req, res) => {
+    try {
+        const { examId, stream } = req.body;
+        if (!isValidId(examId)) throw userError("Choose an exam");
+        const exam = await Exam.findById(examId);
+        if (!exam) throw userError("Exam not found", 404);
+        const { key, label } = patternFor(exam.code, stream);
+        const pattern = PATTERNS[key];
+        if (!pattern) throw userError(`Mock tests are not ready for ${exam.code} yet`);
+
+        // Only one mock at a time: resume the unfinished one
+        const open = await TestAttempt.findOne({ userId: req.user._id, mode: "mock", status: "in_progress" });
+        if (open) {
+            if (!isExpired(open)) return res.json({ attemptId: open._id, resumed: true });
+            await finalizeAttempt(open, null, true);
+        }
+
+        const subjects = await Subject.find({ examId: exam._id }).lean();
+        const sections = [];
+        for (const [name, count] of pattern.sections) {
+            const subject = subjects.find((s) => subjectKey(s.name) === name);
+            if (!subject) continue;
+            const picked = await Question.aggregate([
+                { $match: { examId: exam._id, subjectId: subject._id, status: "published" } },
+                { $sample: { size: count } },
+                { $project: { _id: 1, subjectId: 1, chapterId: 1, topicId: 1 } },
+            ]);
+            if (picked.length) sections.push({ name: subject.name, subjectId: subject._id, picked });
+        }
+        const all = sections.flatMap((s) => s.picked);
+        if (all.length === 0) throw userError(`No questions are available for ${label} yet`);
+
+        const markingScheme = {
+            correct: exam.markingScheme.correct,
+            incorrect: exam.markingScheme.incorrect,
+            unanswered: exam.markingScheme.unanswered,
+        };
+        const number = (await Test.countDocuments({ ownerId: req.user._id, examId: exam._id })) + 1;
+        const test = await Test.create({
+            title: `${label} Mock Test ${number}`,
+            examId: exam._id,
+            type: "full_syllabus",
+            sections: sections.map((s) => ({ name: s.name, subjectId: s.subjectId, questionIds: s.picked.map((q) => q._id) })),
+            durationMinutes: pattern.minutes,
+            markingScheme,
+            totalQuestions: all.length,
+            totalMarks: all.length * markingScheme.correct,
+            instructions: "",
+            status: "archived", // personal test: never listed for other students
+            createdBy: req.user._id,
+            ownerId: req.user._id,
+        });
+
+        const now = new Date();
+        const attempt = await TestAttempt.create({
+            userId: req.user._id,
+            examId: exam._id,
+            mode: "mock",
+            testId: test._id,
+            markingScheme,
+            startedAt: now,
+            expiresAt: new Date(now.getTime() + pattern.minutes * 60 * 1000),
+            answers: all.map((q) => ({ questionId: q._id, subjectId: q.subjectId, chapterId: q.chapterId, topicId: q.topicId })),
+        });
+
+        res.status(201).json({ attemptId: attempt._id, resumed: false, title: test.title, totalQuestions: all.length });
+    } catch (error) {
+        sendError(res, error, "generateMock");
+    }
+};
+
+// STUDENT: GET /api/tests/mine   (my recent mock tests)
+const myMocks = async (req, res) => {
+    try {
+        const attempts = await TestAttempt.find({ userId: req.user._id, mode: "mock" })
+            .sort({ createdAt: -1 })
+            .limit(20)
+            .select("testId examId status result.score result.maxScore result.percentage startedAt submittedAt expiresAt")
+            .lean();
+        const tests = await Test.find({ _id: { $in: attempts.map((a) => a.testId).filter(Boolean) } }).select("title totalQuestions").lean();
+        const exams = await Exam.find({ _id: { $in: attempts.map((a) => a.examId) } }).select("code").lean();
+        const testById = new Map(tests.map((t) => [String(t._id), t]));
+        const examById = new Map(exams.map((e) => [String(e._id), e.code]));
+        res.json({
+            mocks: attempts.map((a) => ({
+                attemptId: a._id,
+                title: testById.get(String(a.testId))?.title || "Mock test",
+                examCode: examById.get(String(a.examId)) || "",
+                totalQuestions: testById.get(String(a.testId))?.totalQuestions || 0,
+                inProgress: a.status === "in_progress" && !isExpired(a),
+                score: a.result?.score ?? null,
+                maxScore: a.result?.maxScore ?? null,
+                percentage: a.result?.percentage ?? null,
+                date: a.submittedAt || a.startedAt,
+            })),
+        });
+    } catch (error) {
+        sendError(res, error, "myMocks");
+    }
+};
+
+module.exports = { createTest, listTestsAdmin, deleteTest, listTests, startTest, generateMock, myMocks };

@@ -1,6 +1,6 @@
 const express = require("express");
 const protect = require("../middleware/auth");
-const { listTests, startTest } = require("../controllers/testController");
+const { listTests, startTest, generateMock, myMocks } = require("../controllers/testController");
 
 const router = express.Router();
 
@@ -8,6 +8,8 @@ const router = express.Router();
 router.use(protect);
 
 router.get("/", listTests); // GET  /api/tests?examId=...
+router.post("/generate", generateMock); // POST /api/tests/generate  (student makes a mock test)
+router.get("/mine", myMocks); // GET  /api/tests/mine  (my mock tests)
 router.post("/:id/start", startTest); // POST /api/tests/:id/start
 
 module.exports = router;

@@ -7,6 +7,7 @@ import TestActionBar from "../../components/TestActionBar";
 import SubmitSummary from "../../components/SubmitSummary";
 import { countStatuses } from "../../components/testStatus";
 import useTestSession, { formatClock } from "../../hooks/useTestSession";
+import useAntiCheat, { ExamGuard } from "../../hooks/useAntiCheat";
 
 export default function TestScreen() {
   const { id } = useParams();
@@ -17,10 +18,17 @@ export default function TestScreen() {
 
   const question = questions[current];
 
+  // Mock tests: exam rules (no tab switching, no copying, full screen)
+  const guard = useAntiCheat({
+    active: Boolean(isMock && !loading && questions.length && !submitting),
+    attemptId: id,
+    onLimit: () => submit(),
+  });
+
   // 6. Keyboard: 1-4 or A-D choose an option, arrow keys move between questions
   useEffect(() => {
     const onKey = (e) => {
-      if (!question || summaryOpen || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (!question || summaryOpen || guard.showWarning || e.ctrlKey || e.metaKey || e.altKey) return;
       if (["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName)) return;
       const k = e.key.toLowerCase();
       const pos = "1234".includes(k) && k.length === 1 ? Number(k) - 1 : "abcd".indexOf(k);
@@ -55,6 +63,7 @@ export default function TestScreen() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      {isMock && <ExamGuard guard={guard} onFullScreen={guard.enterFullScreen} />}
       <TestHeader
         title={info.title}
         isMock={isMock}
