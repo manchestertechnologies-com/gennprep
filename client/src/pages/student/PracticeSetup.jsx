@@ -17,6 +17,26 @@ const pillClass = (selected) =>
         : "border-slate-300 text-slate-700 hover:border-slate-400"
     }`;
 
+// A tick box row (chapter or concept)
+function Tick({ checked, onChange, title, sub }) {
+    return (
+        <label
+            className={`flex items-start gap-3 rounded-lg border px-3 py-2.5 cursor-pointer text-sm ${checked
+                ? "border-indigo-600 bg-indigo-50 text-indigo-700"
+                : "border-slate-300 text-slate-700 hover:border-slate-400"
+            }`}
+        >
+            <input type="checkbox" checked={checked} onChange={onChange} className="mt-0.5 h-4 w-4 shrink-0 accent-indigo-600" />
+            <span className="min-w-0">
+                <span className="block font-medium">{title}</span>
+                {sub && <span className="block text-xs font-normal text-slate-500 mt-0.5">{sub}</span>}
+            </span>
+        </label>
+    );
+}
+
+const smallBtn = "text-xs font-semibold text-indigo-600 hover:underline";
+
 export default function PracticeSetup() {
     const navigate = useNavigate();
     const examId = localStorage.getItem("examId"); // chosen on the dashboard
@@ -25,7 +45,9 @@ export default function PracticeSetup() {
     const [subjects, setSubjects] = useState([]);
     const [subjectId, setSubjectId] = useState("");
     const [chapters, setChapters] = useState([]);
-    const [chapterId, setChapterId] = useState("");
+    const [chapterIds, setChapterIds] = useState([]); // ticked chapters
+    const [topicsByChapter, setTopicsByChapter] = useState({}); // chapterId -> topics
+    const [topicIds, setTopicIds] = useState([]); // ticked concepts (none = whole chapter)
     const [difficulty, setDifficulty] = useState("any");
     const [count, setCount] = useState(20);
     const [loadingChapters, setLoadingChapters] = useState(false);
@@ -48,10 +70,25 @@ export default function PracticeSetup() {
             .catch((err) => setError(getErrorMessage(err)));
     }, [examId]);
 
+    // Load the concepts of every ticked chapter (once each)
+    useEffect(() => {
+        chapterIds
+            .filter((id) => !topicsByChapter[id])
+            .forEach((id) => {
+                setTopicsByChapter((prev) => ({ ...prev, [id]: "loading" }));
+                api
+                    .get(`/chapters/${id}/topics`)
+                    .then((res) => setTopicsByChapter((prev) => ({ ...prev, [id]: res.data.topics })))
+                    .catch(() => setTopicsByChapter((prev) => ({ ...prev, [id]: [] })));
+            });
+    }, [chapterIds, topicsByChapter]);
+
     // When a subject is clicked, load its chapters
     const chooseSubject = (id) => {
+        if (id === subjectId) return;
         setSubjectId(id);
-        setChapterId("");
+        setChapterIds([]);
+        setTopicIds([]);
         setChapters([]);
         setError("");
         setLoadingChapters(true);
@@ -62,12 +99,37 @@ export default function PracticeSetup() {
             .finally(() => setLoadingChapters(false));
     };
 
+    const topicsOf = (chapterId) => (Array.isArray(topicsByChapter[chapterId]) ? topicsByChapter[chapterId] : []);
+
+    const toggleChapter = (id) => {
+        if (chapterIds.includes(id)) {
+            // Un-ticking a chapter also un-ticks its concepts
+            const gone = new Set(topicsOf(id).map((t) => t._id));
+            setTopicIds((prev) => prev.filter((t) => !gone.has(t)));
+            setChapterIds((prev) => prev.filter((c) => c !== id));
+        } else setChapterIds((prev) => [...prev, id]);
+    };
+    const setManyChapters = (ids, on) => {
+        if (on) setChapterIds((prev) => [...new Set([...prev, ...ids])]);
+        else {
+            const gone = new Set(ids.flatMap((id) => topicsOf(id).map((t) => t._id)));
+            setTopicIds((prev) => prev.filter((t) => !gone.has(t)));
+            setChapterIds((prev) => prev.filter((c) => !ids.includes(c)));
+        }
+    };
+    const toggleTopic = (id) =>
+        setTopicIds((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
+    const setChapterTopics = (chapterId, on) => {
+        const ids = topicsOf(chapterId).map((t) => t._id);
+        setTopicIds((prev) => (on ? [...new Set([...prev, ...ids])] : prev.filter((t) => !ids.includes(t))));
+    };
+
     // Ask the backend for random questions, then open the test screen
     const startPractice = async () => {
         setError("");
         setStarting(true);
         try {
-            const res = await api.post("/attempts/practice", { chapterId, difficulty, count });
+            const res = await api.post("/attempts/practice", { chapterIds, topicIds, difficulty, count });
             navigate(`/attempt/${res.data.attemptId}`);
         } catch (err) {
             setError(getErrorMessage(err));
@@ -88,16 +150,16 @@ export default function PracticeSetup() {
         );
     }
 
+    const classes = [...new Set(chapters.map((c) => String(c.classLevel || "")))].sort();
+    const chosenChapters = chapters.filter((c) => chapterIds.includes(c._id));
+
     return (
         <div className="bg-slate-50">
-
             <main className="max-w-3xl mx-auto px-4 py-8">
                 <h1 className="text-2xl font-bold text-slate-900">Practice {examCode}</h1>
-                <p className="text-slate-500 mt-1">Pick a chapter and how many questions you want.</p>
+                <p className="text-slate-500 mt-1">Pick one or more chapters, the concepts you want, and how many questions.</p>
 
-                {error && (
-                    <div className="mt-5 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-3">{error}</div>
-                )}
+                {error && <div className="mt-5 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-3">{error}</div>}
 
                 {/* Step 1: subject */}
                 <section className="mt-6 bg-white rounded-xl border border-slate-200 p-5">
@@ -111,36 +173,92 @@ export default function PracticeSetup() {
                     </div>
                 </section>
 
-                {/* Step 2: chapter */}
+                {/* Step 2: chapters (many) */}
                 {subjectId && (
                     <section className="mt-4 bg-white rounded-xl border border-slate-200 p-5">
-                        <h2 className="font-semibold text-slate-900">2. Chapter</h2>
+                        <div className="flex flex-wrap items-baseline justify-between gap-2">
+                            <h2 className="font-semibold text-slate-900">2. Chapters</h2>
+                            <span className="text-xs text-slate-500">{chapterIds.length} selected</span>
+                        </div>
                         {loadingChapters ? (
                             <p className="text-sm text-slate-500 mt-3">Loading chapters...</p>
                         ) : chapters.length === 0 ? (
                             <p className="text-sm text-slate-500 mt-3">No chapters added for this subject yet.</p>
                         ) : (
-                            <div className="grid sm:grid-cols-2 gap-2 mt-3">
-                                {chapters.map((c) => (
-                                    <button
-                                        key={c._id}
-                                        onClick={() => setChapterId(c._id)}
-                                        className={`text-left ${pillClass(c._id === chapterId)}`}
-                                    >
-                                        <span className="block">{c.name}</span>
-                                        <span className="block text-xs font-normal text-slate-500 mt-0.5">Class {c.classLevel}</span>
-                                    </button>
-                                ))}
-                            </div>
+                            classes.map((cl) => {
+                                const list = chapters.filter((c) => String(c.classLevel || "") === cl);
+                                const ids = list.map((c) => c._id);
+                                const allOn = ids.every((id) => chapterIds.includes(id));
+                                return (
+                                    <div key={cl} className="mt-4">
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-sm font-semibold text-slate-700">{cl ? `Class ${cl}` : "Chapters"}</p>
+                                            <button type="button" className={smallBtn} onClick={() => setManyChapters(ids, !allOn)}>
+                                                {allOn ? "Clear" : "Select all"}
+                                            </button>
+                                        </div>
+                                        <div className="grid sm:grid-cols-2 gap-2 mt-2">
+                                            {list.map((c) => (
+                                                <Tick key={c._id} checked={chapterIds.includes(c._id)} onChange={() => toggleChapter(c._id)} title={c.name} />
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })
                         )}
                     </section>
                 )}
 
-                {/* Step 3: settings and start */}
-                {chapterId && (
+                {/* Step 3: concepts (many, optional) */}
+                {chosenChapters.length > 0 && (
+                    <section className="mt-4 bg-white rounded-xl border border-slate-200 p-5">
+                        <div className="flex flex-wrap items-baseline justify-between gap-2">
+                            <h2 className="font-semibold text-slate-900">3. Concepts <span className="font-normal text-slate-500 text-sm">(optional)</span></h2>
+                            <span className="text-xs text-slate-500">{topicIds.length ? `${topicIds.length} selected` : "All concepts"}</span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1">
+                            Leave a chapter with nothing ticked to get questions from all of its concepts.
+                        </p>
+                        {chosenChapters.map((c) => {
+                            const topics = topicsByChapter[c._id];
+                            const list = topicsOf(c._id);
+                            const picked = list.filter((t) => topicIds.includes(t._id)).length;
+                            return (
+                                <details key={c._id} className="mt-3 rounded-lg border border-slate-200" open={chosenChapters.length <= 2}>
+                                    <summary className="flex cursor-pointer items-center justify-between gap-2 px-3 py-2.5 text-sm">
+                                        <span className="font-medium text-slate-800">{c.name}</span>
+                                        <span className="text-xs text-slate-500 shrink-0">{picked ? `${picked} of ${list.length}` : "All concepts"}</span>
+                                    </summary>
+                                    <div className="px-3 pb-3">
+                                        {topics === "loading" || topics === undefined ? (
+                                            <p className="text-sm text-slate-500">Loading concepts...</p>
+                                        ) : list.length === 0 ? (
+                                            <p className="text-sm text-slate-500">No concepts in this chapter.</p>
+                                        ) : (
+                                            <>
+                                                <div className="flex gap-4">
+                                                    <button type="button" className={smallBtn} onClick={() => setChapterTopics(c._id, true)}>Select all</button>
+                                                    <button type="button" className={smallBtn} onClick={() => setChapterTopics(c._id, false)}>Clear</button>
+                                                </div>
+                                                <div className="grid sm:grid-cols-2 gap-2 mt-2">
+                                                    {list.map((t) => (
+                                                        <Tick key={t._id} checked={topicIds.includes(t._id)} onChange={() => toggleTopic(t._id)} title={t.name} />
+                                                    ))}
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                </details>
+                            );
+                        })}
+                    </section>
+                )}
+
+                {/* Step 4: settings and start */}
+                {chosenChapters.length > 0 && (
                     <>
                         <section className="mt-4 bg-white rounded-xl border border-slate-200 p-5">
-                            <h2 className="font-semibold text-slate-900">3. Settings</h2>
+                            <h2 className="font-semibold text-slate-900">4. Settings</h2>
 
                             <p className="text-sm text-slate-500 mt-3">Difficulty</p>
                             <div className="flex flex-wrap gap-2 mt-2">
@@ -160,7 +278,7 @@ export default function PracticeSetup() {
                                 ))}
                             </div>
                             <p className="text-xs text-slate-500 mt-3">
-                                If the chapter has fewer questions, you get all of them.
+                                Questions are mixed from all the chapters you picked. If there are fewer, you get all of them.
                             </p>
                         </section>
 
@@ -169,7 +287,7 @@ export default function PracticeSetup() {
                             disabled={starting}
                             className="mt-6 w-full rounded-lg bg-indigo-600 text-white font-medium py-3 hover:bg-indigo-700 disabled:opacity-60"
                         >
-                            {starting ? "Preparing questions..." : "Start practice"}
+                            {starting ? "Preparing questions..." : `Start practice (${chosenChapters.length} chapter${chosenChapters.length > 1 ? "s" : ""})`}
                         </button>
                     </>
                 )}

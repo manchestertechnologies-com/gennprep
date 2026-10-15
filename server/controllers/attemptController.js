@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const TestAttempt = require("../models/TestAttempt");
 const Question = require("../models/Question");
 const Chapter = require("../models/Chapter");
+const Topic = require("../models/Topic");
 const Exam = require("../models/Exam");
 const { finalizeAttempt, isExpired } = require("../utils/finalizeAttempt");
 const { STUDENT_FIELDS, buildReview, mockExtras } = require("../utils/attemptHelpers");
@@ -11,26 +12,53 @@ const isValidId = (id) => mongoose.isValidObjectId(id);
 const toObjectId = (id) => new mongoose.Types.ObjectId(id);
 
 // POST /api/attempts/practice
+// Body: { chapterIds: [...], topicIds: [...], difficulty, count }   (chapterId alone also works)
+// A chapter with ticked concepts gives only those concepts; a chapter with none gives all of it.
 const startPractice = async (req, res) => {
     try {
-        const { chapterId, topicIds = [], difficulty = "any", count = 10 } = req.body;
-        if (!isValidId(chapterId)) return res.status(400).json({ message: "A valid chapterId is required" });
+        const { chapterId, chapterIds, topicIds = [], difficulty = "any", count = 10 } = req.body;
+        const asList = (v) => (Array.isArray(v) ? v : v ? [v] : []);
+        const wanted = [...new Set([...asList(chapterIds), ...asList(chapterId)].map(String))].filter(isValidId).slice(0, 60);
+        if (wanted.length === 0) return res.status(400).json({ message: "Choose at least one chapter" });
 
-        const chapter = await Chapter.findById(chapterId);
-        if (!chapter) return res.status(404).json({ message: "Chapter not found" });
-        const exam = await Exam.findById(chapter.examId);
+        const chapters = await Chapter.find({ _id: { $in: wanted.map(toObjectId) } });
+        if (chapters.length === 0) return res.status(404).json({ message: "Chapter not found" });
+        // All chapters must belong to the same exam
+        const examIdOfFirst = String(chapters[0].examId);
+        if (chapters.some((c) => String(c.examId) !== examIdOfFirst)) {
+            return res.status(400).json({ message: "Pick chapters from one exam only" });
+        }
+        const exam = await Exam.findById(chapters[0].examId);
 
         const size = Math.min(Math.max(parseInt(count) || 10, 1), 60);
-        const match = { chapterId: toObjectId(chapterId), status: "published" };
 
-        const validTopicIds = (Array.isArray(topicIds) ? topicIds : [topicIds]).filter(isValidId);
-        if (validTopicIds.length > 0) match.topicId = { $in: validTopicIds.map(toObjectId) };
+        // Ticked concepts, grouped by their chapter
+        const chapterIdSet = new Set(chapters.map((c) => String(c._id)));
+        const validTopicIds = asList(topicIds).filter(isValidId);
+        const topics = validTopicIds.length
+            ? await Topic.find({ _id: { $in: validTopicIds.map(toObjectId) } }).select("chapterId").lean()
+            : [];
+        const topicsByChapter = new Map();
+        for (const t of topics) {
+            const key = String(t.chapterId);
+            if (!chapterIdSet.has(key)) continue;
+            if (!topicsByChapter.has(key)) topicsByChapter.set(key, []);
+            topicsByChapter.get(key).push(t._id);
+        }
+        const parts = chapters.map((c) =>
+            topicsByChapter.has(String(c._id))
+                ? { chapterId: c._id, topicId: { $in: topicsByChapter.get(String(c._id)) } }
+                : { chapterId: c._id }
+        );
+
+        const match = { status: "published", $or: parts };
         if (["easy", "medium", "hard"].includes(difficulty)) match.difficulty = difficulty;
 
         const questions = await Question.aggregate([{ $match: match }, { $sample: { size } }, { $project: STUDENT_FIELDS }]);
         if (questions.length === 0) {
             return res.status(404).json({ message: "No questions found for these choices" });
         }
+        const usedTopicIds = [...topicsByChapter.values()].flat();
 
         const markingScheme = {
             correct: exam.markingScheme.correct,
@@ -42,7 +70,7 @@ const startPractice = async (req, res) => {
             userId: req.user._id,
             examId: exam._id,
             mode: "practice",
-            filters: { chapterId, topicIds: validTopicIds, difficulty, count: size },
+            filters: { chapterId: chapters[0]._id, topicIds: usedTopicIds, difficulty, count: size },
             markingScheme,
             answers: questions.map((q) => ({
                 questionId: q._id,
