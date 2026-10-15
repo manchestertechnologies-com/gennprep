@@ -16,7 +16,7 @@ const buildPayload = (questions, answers, marked, times) =>
     const given = answers[q._id] || [];
     // Numerical questions: the typed number is kept as the only item in the list
     const numerical = q.type === "numerical" || !(q.options || []).length;
-    const value = numerical && given.length ? Number(String(given[0]).trim()) : NaN;
+    const value = numerical && given.length ? parseFloat((String(given[0]).match(/-?\d*\.?\d+/) || [""])[0]) : NaN;
     return {
     questionId: q._id,
     selectedOptionIds: numerical ? [] : given,

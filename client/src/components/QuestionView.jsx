@@ -44,19 +44,19 @@ export default function QuestionView({ question, index, total, selected, isMarke
       {isNumerical && (
         <div className="mt-6">
           <label htmlFor="numerical-answer" className="block text-sm font-semibold text-slate-700">
-            Your answer (type a number)
+            Your answer
           </label>
           <input
             id="numerical-answer"
             key={question._id}
             type="text"
-            inputMode="decimal"
+            inputMode="text"
             autoComplete="off"
-            placeholder="e.g. 12 or 3.5"
+            placeholder="Type your answer"
             value={selected[0] || ""}
             onChange={(e) => {
-              // Only digits, one minus sign at the start and one decimal point
-              const v = e.target.value.replace(/[^0-9.\-]/g, "").replace(/(?!^)-/g, "").replace(/(\..*)\./g, "$1");
+              
+              const v = e.target.value;
               if (onNumber) onNumber(v);
             }}
             className="mt-2 w-full max-w-xs rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-lg text-slate-900 focus:border-indigo-600 focus:outline-none"
