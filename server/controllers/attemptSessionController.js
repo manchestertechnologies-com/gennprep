@@ -74,6 +74,7 @@ const getAttempt = async (req, res) => {
                 savedAnswers: attempt.answers.map((a) => ({
                     questionId: a.questionId,
                     selectedOptionIds: a.selectedOptionIds,
+                    numericalValue: a.numericalValue,
                     markedForReview: a.markedForReview,
                     timeSpentSec: a.timeSpentSec,
                 })),

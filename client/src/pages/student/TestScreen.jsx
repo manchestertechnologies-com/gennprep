@@ -78,6 +78,7 @@ export default function TestScreen() {
             isMarked={Boolean(marked[question._id])}
             markingScheme={info.markingScheme}
             onChoose={(optionId) => chooseOption(question, optionId)}
+            onNumber={(text) => setAnswers((prev) => ({ ...prev, [question._id]: text.trim() ? [text] : [] }))}
           />
         </div>
         <QuestionPalette questions={questions} current={current} answers={answers} marked={marked} visited={visited} onJump={goTo} />

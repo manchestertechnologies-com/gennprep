@@ -12,12 +12,19 @@ export const formatClock = (seconds) => {
 
 // Answers in the shape the server expects
 const buildPayload = (questions, answers, marked, times) =>
-  questions.map((q) => ({
+  questions.map((q) => {
+    const given = answers[q._id] || [];
+    // Numerical questions: the typed number is kept as the only item in the list
+    const numerical = q.type === "numerical" || !(q.options || []).length;
+    const value = numerical && given.length ? Number(String(given[0]).trim()) : NaN;
+    return {
     questionId: q._id,
-    selectedOptionIds: answers[q._id] || [],
+    selectedOptionIds: numerical ? [] : given,
+    ...(Number.isFinite(value) ? { numericalValue: value } : {}),
     markedForReview: Boolean(marked[q._id]),
     timeSpentSec: times[q._id] || 0,
-  }));
+    };
+  });
 
 // Everything the test screen needs: loading, answers, timer, autosave and submitting
 export default function useTestSession(id) {
@@ -64,6 +71,7 @@ export default function useTestSession(id) {
         const t = {};
         (d.savedAnswers || []).forEach((s) => {
           if (s.selectedOptionIds?.length) a[s.questionId] = s.selectedOptionIds;
+          else if (typeof s.numericalValue === "number") a[s.questionId] = [String(s.numericalValue)];
           if (s.markedForReview) m[s.questionId] = true;
           if (s.timeSpentSec) t[s.questionId] = s.timeSpentSec;
         });

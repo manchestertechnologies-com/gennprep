@@ -51,9 +51,11 @@ const scoreAttempt = (attempt, submitted, questionsById) => {
             isCorrect = null; // question was removed: count as unanswered
         } else if (question.type === "numerical") {
             answer.correctOptionIds = [];
-            if (answer.numericalValue !== undefined) {
-                const tolerance = question.numericalAnswer.tolerance || 0;
-                isCorrect = Math.abs(answer.numericalValue - question.numericalAnswer.value) <= tolerance;
+            const correctValue = question.numericalAnswer?.value;
+            if (answer.numericalValue !== undefined && typeof correctValue === "number") {
+                // A tiny extra margin so 0.1 + 0.2 style rounding never marks a right answer wrong
+                const tolerance = (question.numericalAnswer.tolerance || 0) + 1e-9;
+                isCorrect = Math.abs(answer.numericalValue - correctValue) <= tolerance;
             }
         } else {
             answer.correctOptionIds = [...question.correctOptionIds].sort();

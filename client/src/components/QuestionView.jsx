@@ -7,7 +7,8 @@ const DIFFICULTY_STYLES = {
 };
 
 // One question card with big, easy-to-tap options
-export default function QuestionView({ question, index, total, selected, isMarked, markingScheme, onChoose }) {
+export default function QuestionView({ question, index, total, selected, isMarked, markingScheme, onChoose, onNumber }) {
+  const isNumerical = question.type === "numerical" || !(question.options || []).length;
   return (
     <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 md:p-7">
       <div className="flex flex-wrap items-center gap-2">
@@ -40,6 +41,29 @@ export default function QuestionView({ question, index, total, selected, isMarke
         <img key={img.url} src={img.url} alt={img.alt || "Question diagram"} className="mt-4 max-h-72 rounded-lg border border-slate-200" />
       ))}
 
+      {isNumerical && (
+        <div className="mt-6">
+          <label htmlFor="numerical-answer" className="block text-sm font-semibold text-slate-700">
+            Your answer (type a number)
+          </label>
+          <input
+            id="numerical-answer"
+            key={question._id}
+            type="text"
+            inputMode="decimal"
+            autoComplete="off"
+            placeholder="e.g. 12 or 3.5"
+            value={selected[0] || ""}
+            onChange={(e) => {
+              // Only digits, one minus sign at the start and one decimal point
+              const v = e.target.value.replace(/[^0-9.\-]/g, "").replace(/(?!^)-/g, "").replace(/(\..*)\./g, "$1");
+              if (onNumber) onNumber(v);
+            }}
+            className="mt-2 w-full max-w-xs rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-lg text-slate-900 focus:border-indigo-600 focus:outline-none"
+          />
+        </div>
+      )}
+
       <div className="mt-6 space-y-3" role="group" aria-label="Options">
         {question.options.map((opt, i) => {
           const isSelected = selected.includes(opt.id);
@@ -70,7 +94,9 @@ export default function QuestionView({ question, index, total, selected, isMarke
       </div>
 
       <p className="hidden md:block mt-5 text-xs text-slate-400">
-        Tip: press 1-4 to choose an option, and the arrow keys to move between questions.
+        {isNumerical
+          ? "Tip: type your answer in the box. Use the arrow keys (outside the box) to move between questions."
+          : "Tip: press 1-4 to choose an option, and the arrow keys to move between questions."}
       </p>
     </section>
   );
