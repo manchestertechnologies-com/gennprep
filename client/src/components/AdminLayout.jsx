@@ -29,7 +29,7 @@ function Sidebar({ onNavigate }) {
     <div className="flex h-full flex-col">
       <Link to="/admin" onClick={onNavigate} className="flex items-center gap-2 px-3 py-4 font-bold text-slate-900">
         <img src="/favicon.svg" alt="" className="h-8 w-8" />
-        <span>ExamPrep AI</span>
+        <span>GenPrep</span>
         <span className="rounded bg-indigo-600 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">Admin</span>
       </Link>
       <nav className="mt-2 flex-1 space-y-1" aria-label="Admin">
@@ -74,7 +74,7 @@ export default function AdminLayout({ title, actions, children }) {
         <button onClick={() => setOpen(true)} aria-label="Open menu" className="rounded-lg border border-slate-300 p-2 text-slate-700">
           <Icon d="M4 6h16M4 12h16M4 18h16" />
         </button>
-        <span className="font-bold text-slate-900">ExamPrep AI</span>
+        <span className="font-bold text-slate-900">GenPrep</span>
         <span className="rounded bg-indigo-600 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">Admin</span>
       </header>
 

@@ -73,7 +73,7 @@ export default function Landing({ loggedIn }) {
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3.5">
           <Link to="/" className="flex items-center gap-2.5">
             <img src="/favicon.svg" alt="" className="h-9 w-9 rounded-lg" />
-            <span className="font-display text-xl font-bold text-white">ExamPrep<span className={GOLD}>AI</span></span>
+            <span className="font-display text-xl font-bold text-white">GenPrep</span>
           </Link>
           <nav className="hidden items-center gap-1 text-sm md:flex">
             {[["#exams", "Exams"], ["#features", "Features"], ["#how", "How it works"]].map(([href, label]) => (
@@ -183,7 +183,7 @@ export default function Landing({ loggedIn }) {
       </section>
 
       <footer className="border-t border-[#1a1a1a] py-8 text-center text-sm text-[#737373]">
-        © {new Date().getFullYear()} ExamPrep AI · A <span className="text-[#d4b26a]">ManchesterTech</span> product
+        © {new Date().getFullYear()} GenPrep · A <span className="text-[#d4b26a]">ManchesterTech</span> product
       </footer>
     </div>
   );

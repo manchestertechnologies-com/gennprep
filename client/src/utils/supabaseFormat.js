@@ -1,4 +1,4 @@
-// Converts a row exported from the question website (Supabase CSV) into ExamPrep's bulk upload row
+// Converts a row exported from the question website (Supabase CSV) into GenPrep's bulk upload row
 
 const clean = (v) => (v === undefined || v === null ? "" : String(v).trim());
 const parseJson = (v, fallback) => {

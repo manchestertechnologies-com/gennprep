@@ -17,7 +17,7 @@ const sendEmail = async ({ to, subject, text }) => {
       accept: "application/json",
     },
     body: JSON.stringify({
-      sender: { name: "ExamPrep AI", email: process.env.EMAIL_FROM },
+      sender: { name: "GenPrep", email: process.env.EMAIL_FROM },
       to: [{ email: to }],
       subject,
       textContent: text,

@@ -41,7 +41,7 @@ const forgotPassword = async (req, res) => {
 
         await sendEmail({
             to: email,
-            subject: "Your ExamPrep AI password reset code",
+            subject: "Your GenPrep password reset code",
             text: `Hi ${user.name},\n\nYour code is ${code}. It expires in ${CODE_MINUTES} minutes.\n\nIf you did not ask for this, you can ignore this email.`,
         });
 

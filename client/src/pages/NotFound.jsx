@@ -8,7 +8,7 @@ export default function NotFound() {
       <div className="text-center max-w-md">
         <Link to="/" className="inline-flex items-center gap-2 font-bold text-slate-900">
           <img src="/favicon.svg" alt="" className="h-8 w-8" />
-          ExamPrep AI
+          GenPrep
         </Link>
         <p className="mt-10 text-8xl font-extrabold tracking-tight bg-linear-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">404</p>
         <h1 className="mt-4 text-2xl font-bold text-slate-900">This page went missing</h1>

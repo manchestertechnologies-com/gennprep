@@ -28,7 +28,7 @@ function Logo({ compact }) {
     <Link to="/dashboard" className="flex items-center gap-2 font-bold text-slate-900">
       <img src="/favicon.svg" alt="" className="w-8 h-8" />
       <span className={compact ? "hidden sm:inline" : ""}>
-        ExamPrep <span className="bg-linear-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">AI</span>
+        GenPrep
       </span>
     </Link>
   );

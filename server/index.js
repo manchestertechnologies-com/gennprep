@@ -16,11 +16,11 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json({ limit: "5mb" }));
 
 app.get("/", (req, res) => {
-    res.send("ExamPrep AI API is running. Try /api/health");
+    res.send("GenPrep API is running. Try /api/health");
 });
 
 app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", message: "ExamPrep AI server is running" });
+    res.json({ status: "ok", message: "GenPrep server is running" });
 });
 
 app.use("/api/auth", authRoutes);

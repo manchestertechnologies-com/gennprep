@@ -58,7 +58,7 @@ export async function downloadTemplate(examCode, syllabusRows) {
   help["!cols"] = [{ wch: 110 }];
   XLSX.utils.book_append_sheet(wb, help, "Help");
 
-  XLSX.writeFile(wb, `ExamPrep-${examCode || "exam"}-questions.xlsx`);
+  XLSX.writeFile(wb, `GenPrep-${examCode || "exam"}-questions.xlsx`);
 }
 
 // Returns [{ rowNumber, subject, chapter, topic, question, optionA, ... }]
