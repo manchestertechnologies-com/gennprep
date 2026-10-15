@@ -28,7 +28,7 @@ function Sidebar({ onNavigate }) {
   return (
     <div className="flex h-full flex-col">
       <Link to="/admin" onClick={onNavigate} className="flex items-center gap-2 px-3 py-4 font-bold text-slate-900">
-        <img src="/favicon.svg" alt="" className="h-8 w-8" />
+        <img src="/genprep-icon.png" alt="" className="h-8 w-8" />
         <span>GenPrep</span>
         <span className="rounded bg-indigo-600 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">Admin</span>
       </Link>

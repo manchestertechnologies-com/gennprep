@@ -25,7 +25,7 @@ export default function Welcome() {
   return (
     <div className="min-h-screen bg-linear-to-b from-indigo-50 to-white flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-3xl text-center">
-        <img src="/favicon.svg" alt="" className="mx-auto h-12 w-12" />
+        <img src="/genprep-icon.png" alt="" className="mx-auto h-12 w-12" />
         <h1 className="mt-6 text-3xl font-extrabold text-slate-900">Hi {user?.name?.split(" ")[0]}, welcome to GenPrep</h1>
         <p className="mt-2 text-slate-600">Which exam are you preparing for? You can change it any time from the top bar.</p>
 

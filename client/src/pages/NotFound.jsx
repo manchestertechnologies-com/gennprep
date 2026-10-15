@@ -7,7 +7,7 @@ export default function NotFound() {
     <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
       <div className="text-center max-w-md">
         <Link to="/" className="inline-flex items-center gap-2 font-bold text-slate-900">
-          <img src="/favicon.svg" alt="" className="h-8 w-8" />
+          <img src="/genprep-icon.png" alt="" className="h-8 w-8" />
           GenPrep
         </Link>
         <p className="mt-10 text-8xl font-extrabold tracking-tight bg-linear-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">404</p>

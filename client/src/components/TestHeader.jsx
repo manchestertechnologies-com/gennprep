@@ -9,7 +9,7 @@ export default function TestHeader({ title, isMock, saveState, clockText, remain
   return (
     <header className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-slate-200">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center gap-3">
-        <img src="/favicon.svg" alt="" className="hidden sm:block w-8 h-8" />
+        <img src="/genprep-icon.png" alt="" className="hidden sm:block w-12 h-12" />
         <div className="min-w-0 flex-1">
           <p className="font-semibold text-slate-900 truncate">{title}</p>
           <p className="text-xs text-slate-500 truncate">{isMock ? SAVE_TEXT[saveState] || "Answers save automatically" : "Practice mode"}</p>

@@ -26,7 +26,7 @@ function Icon({ path }) {
 function Logo({ compact }) {
   return (
     <Link to="/dashboard" className="flex items-center gap-2 font-bold text-slate-900">
-      <img src="/favicon.svg" alt="" className="w-8 h-8" />
+      <img src="/genprep-icon.png" alt="" className="w-12 h-12" />
       <span className={compact ? "hidden sm:inline" : ""}>
         GenPrep
       </span>

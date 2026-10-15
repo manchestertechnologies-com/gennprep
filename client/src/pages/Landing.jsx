@@ -72,7 +72,7 @@ export default function Landing({ loggedIn }) {
       <header className="sticky top-0 z-30 border-b border-[#1f1f1f] bg-[#0a0a0a]/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3.5">
           <Link to="/" className="flex items-center gap-2.5">
-            <img src="/favicon.svg" alt="" className="h-9 w-9 rounded-lg" />
+            <img src="/genprep-icon.png" alt="" className="h-9 w-9 rounded-lg" />
             <span className="font-display text-xl font-bold text-white">GenPrep</span>
           </Link>
           <nav className="hidden items-center gap-1 text-sm md:flex">

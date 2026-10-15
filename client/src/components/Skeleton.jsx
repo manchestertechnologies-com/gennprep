@@ -35,7 +35,7 @@ export function DashboardSkeleton() {
 export function AppLoading() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4" aria-busy="true">
-      <img src="/favicon.svg" alt="" className="w-12 h-12 animate-pulse" />
+      <img src="/genprep-icon.png" alt="" className="w-12 h-12 animate-pulse" />
       <p className="text-sm text-slate-500">Loading GenPrep...</p>
     </div>
   );
