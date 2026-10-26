@@ -18,6 +18,7 @@ export default function Revise() {
     const examId = localStorage.getItem("examId");
 
     const [wrongCount, setWrongCount] = useState(0);
+    const [showBookmarks, setShowBookmarks] = useState(false); // the list opens only when asked
     const [progress, setProgress] = useState(null); // weak / strong chapters and recent tests
     const [bookmarks, setBookmarks] = useState([]);
     const [count, setCount] = useState(20);
@@ -126,6 +127,13 @@ export default function Revise() {
                                 >
                                     {starting === "bookmarks" ? "Preparing..." : "Practise bookmarks"}
                                 </button>
+                                <button
+                                    onClick={() => setShowBookmarks((s) => !s)}
+                                    disabled={bookmarks.length === 0}
+                                    className="mt-2 w-full rounded-lg border border-slate-300 text-slate-700 text-sm font-medium py-2.5 hover:bg-slate-100 disabled:opacity-50"
+                                >
+                                    {showBookmarks ? "Hide bookmarked questions" : "View bookmarked questions"}
+                                </button>
                             </div>
                         </div>
 
@@ -139,6 +147,8 @@ export default function Revise() {
                             </>
                         )}
 
+                        {showBookmarks && (
+                        <div>
                         <h2 className="font-semibold text-slate-900 mt-8">Your bookmarks</h2>
                         {bookmarks.length === 0 ? (
                             <EmptyState icon="star" title="No bookmarks yet" text="Tap the star on any question in your results to save it here for revision." actionLabel="Go to my dashboard" actionTo="/dashboard" />
@@ -170,6 +180,8 @@ export default function Revise() {
                                     </article>
                                 ))}
                             </div>
+                        )}
+                        </div>
                         )}
                     </>
                 )}
