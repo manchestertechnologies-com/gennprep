@@ -3,6 +3,7 @@ import MathText from "../../components/MathText";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api, { getErrorMessage } from "../../api/axios";
+import { ChapterList, RecentTests } from "../../components/DashboardLists";
 
 const COUNTS = [10, 20, 30];
 
@@ -17,6 +18,7 @@ export default function Revise() {
     const examId = localStorage.getItem("examId");
 
     const [wrongCount, setWrongCount] = useState(0);
+    const [progress, setProgress] = useState(null); // weak / strong chapters and recent tests
     const [bookmarks, setBookmarks] = useState([]);
     const [count, setCount] = useState(20);
     const [loading, setLoading] = useState(true);
@@ -32,6 +34,7 @@ export default function Revise() {
         ])
             .then(([dash, marks]) => {
                 setWrongCount(dash.data.wrongQuestionsCount);
+                setProgress(dash.data);
                 setBookmarks(marks.data.bookmarks);
             })
             .catch((err) => setError(getErrorMessage(err)))
@@ -125,6 +128,16 @@ export default function Revise() {
                                 </button>
                             </div>
                         </div>
+
+                        {progress && (
+                            <>
+                                <div className="grid md:grid-cols-2 gap-4 mt-6">
+                                    <ChapterList title="Weak chapters" chapters={progress.weakChapters || []} emptyText="No weak chapters yet." tone="weak" />
+                                    <ChapterList title="Strong chapters" chapters={progress.strongChapters || []} emptyText="Reach 80% accuracy in a chapter to see it here." tone="strong" />
+                                </div>
+                                {(progress.recentTests || []).length > 0 && <RecentTests tests={progress.recentTests} />}
+                            </>
+                        )}
 
                         <h2 className="font-semibold text-slate-900 mt-8">Your bookmarks</h2>
                         {bookmarks.length === 0 ? (

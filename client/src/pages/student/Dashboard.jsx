@@ -6,7 +6,7 @@ import { useExam } from "../../context/ExamContext";
 import { DashboardSkeleton } from "../../components/Skeleton";
 import { QuickActions, WelcomeBanner } from "../../components/DashboardHero";
 import { StatsRow, WeeklyChart } from "../../components/DashboardWidgets";
-import { ChapterList, RecentTests, RecommendedCard } from "../../components/DashboardLists";
+import { RecommendedCard } from "../../components/DashboardLists";
 
 const STEPS = [
   { title: "Pick a chapter", text: "Open Practice and choose any chapter or topic." },
@@ -69,11 +69,7 @@ export default function Dashboard() {
             </div>
             <RecommendedCard recommended={data.recommended} wrongCount={data.wrongQuestionsCount} />
           </div>
-          <div className="grid md:grid-cols-2 gap-4 mt-4">
-            <ChapterList title="Weak chapters" chapters={data.weakChapters} emptyText="No weak chapters yet." tone="weak" />
-            <ChapterList title="Strong chapters" chapters={data.strongChapters} emptyText="Reach 80% accuracy in a chapter to see it here." tone="strong" />
-          </div>
-          {data.recentTests.length > 0 && <RecentTests tests={data.recentTests} />}
+
         </>
       )}
     </div>
