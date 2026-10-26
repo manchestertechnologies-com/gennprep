@@ -141,42 +141,6 @@ export default function MockTests() {
                         );
                     })}
                 </div>
-
-                {mine.length > 0 && (
-                    <section className="mt-8 bg-white rounded-2xl border border-slate-200 p-5">
-                        <h2 className="font-semibold text-slate-900">Your mock tests</h2>
-                        <ul className="mt-3 divide-y divide-slate-100">
-                            {mine.map((m) => (
-                                <li key={m.attemptId} className="flex flex-wrap items-center gap-3 py-3">
-                                    <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-medium text-slate-800">{m.title}</p>
-                                        <p className="text-xs text-slate-400">
-                                            {new Date(m.date).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                                            {" - "}
-                                            {m.totalQuestions} questions
-                                        </p>
-                                    </div>
-                                    {m.inProgress ? (
-                                        <Link to={`/attempt/${m.attemptId}`} onClick={goFullScreen} className="text-sm font-semibold text-indigo-600 hover:underline">
-                                            Resume
-                                        </Link>
-                                    ) : (
-                                        <>
-                                            {m.score !== null && (
-                                                <span className="text-sm font-semibold text-slate-800">
-                                                    {m.score}/{m.maxScore}
-                                                </span>
-                                            )}
-                                            <Link to={`/result/${m.attemptId}`} className="text-sm font-semibold text-indigo-600 hover:underline">
-                                                Result
-                                            </Link>
-                                        </>
-                                    )}
-                                </li>
-                            ))}
-                        </ul>
-                    </section>
-                )}
             </main>
 
             {/* Rules shown before starting */}
