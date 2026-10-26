@@ -93,14 +93,7 @@ export default function Revise() {
                     <p className="mt-6 text-slate-500">Loading...</p>
                 ) : (
                     <>
-                        <p className="text-sm text-slate-500 mt-6">Questions per session</p>
-                        <div className="flex gap-2 mt-2">
-                            {COUNTS.map((n) => (
-                                <button key={n} onClick={() => setCount(n)} className={pillClass(n === count)}>
-                                    {n}
-                                </button>
-                            ))}
-                        </div>
+
 
                         <div className="grid md:grid-cols-2 gap-4 mt-4">
                             <div className="bg-white rounded-xl border border-slate-200 p-5">
