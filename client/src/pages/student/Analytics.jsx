@@ -118,6 +118,7 @@ export default function Analytics() {
   const [tab, setTab] = useState("practice");
   const [data, setData] = useState({}); // tab -> tests
   const [open, setOpen] = useState(null);
+  const [subject, setSubject] = useState("all");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -130,7 +131,44 @@ export default function Analytics() {
     );
   }, [examId]);
 
-  const tests = data[tab];
+  const allTests = data[tab];
+
+  // Subject buttons (Physics, Chemistry, Biology, Maths) found in these tests
+  const ORDER = ["physics", "chemistry", "biology", "mathematics", "maths"];
+  const subjectNames = useMemo(() => {
+    const names = [...new Set((allTests || []).flatMap((t) => t.subjects.map((s) => s.name)))];
+    const rank = (n) => {
+      const i = ORDER.indexOf(n.toLowerCase());
+      return i < 0 ? 99 : i;
+    };
+    return names.sort((x, y) => rank(x) - rank(y) || x.localeCompare(y));
+  }, [allTests]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // With a subject chosen, each test shows only that subject's marks
+  const tests = useMemo(() => {
+    if (!allTests) return allTests;
+    if (subject === "all") return allTests;
+    return allTests
+      .map((t) => {
+        const s = t.subjects.find((x) => x.name === subject);
+        if (!s) return null;
+        const questions = t.correct + t.incorrect + t.unanswered || 1;
+        const maxScore = Math.round((t.maxScore * s.total) / questions);
+        return {
+          ...t,
+          score: s.score,
+          maxScore,
+          percentage: maxScore ? (s.score / maxScore) * 100 : 0,
+          correct: s.correct,
+          incorrect: s.incorrect,
+          unanswered: s.unanswered,
+          accuracy: s.accuracy,
+          subjects: [s],
+          chapters: t.chapters.filter((c) => c.subject === subject),
+        };
+      })
+      .filter(Boolean);
+  }, [allTests, subject]);
 
   // Totals and subject accuracy across all tests in this tab
   const summary = useMemo(() => {
@@ -167,6 +205,7 @@ export default function Analytics() {
             onClick={() => {
               setTab(t.key);
               setOpen(null);
+              setSubject("all");
             }}
             className={`rounded-2xl border-2 px-4 py-4 text-left transition ${
               tab === t.key ? "border-indigo-600 bg-indigo-50" : "border-slate-200 bg-white hover:border-slate-300"
@@ -177,6 +216,26 @@ export default function Analytics() {
           </button>
         ))}
       </div>
+
+      {/* Subject buttons */}
+      {subjectNames.length > 0 && (
+        <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Subject">
+          {["all", ...subjectNames].map((name) => (
+            <button
+              key={name}
+              onClick={() => {
+                setSubject(name);
+                setOpen(null);
+              }}
+              className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition ${
+                subject === name ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-300 text-slate-600 hover:border-slate-400"
+              }`}
+            >
+              {name === "all" ? "All subjects" : name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {error && <div className="mt-5 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
 
@@ -189,7 +248,9 @@ export default function Analytics() {
 
       {tests && tests.length === 0 && (
         <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-8 text-center">
-          <p className="font-semibold text-slate-900">No {tab === "mock" ? "mock tests" : "practice tests"} yet</p>
+          <p className="font-semibold text-slate-900">
+            No {tab === "mock" ? "mock tests" : "practice tests"} {subject === "all" ? "yet" : `with ${subject} yet`}
+          </p>
           <p className="mt-1 text-sm text-slate-500">Finish one and your marks will show here.</p>
           <Link
             to={tab === "mock" ? "/mock-tests" : "/practice"}
@@ -209,7 +270,7 @@ export default function Analytics() {
             <Tile label="Questions answered" value={summary.attempted} sub={`${summary.correct} correct`} />
           </div>
 
-          {summary.subjects.length > 0 && (
+          {subject === "all" && summary.subjects.length > 0 && (
             <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-5">
               <h2 className="font-semibold text-slate-900">Accuracy by subject</h2>
               <div className="mt-4 space-y-4">
@@ -230,7 +291,10 @@ export default function Analytics() {
             </section>
           )}
 
-          <h2 className="mt-8 font-semibold text-slate-900">{tab === "mock" ? "Your mock tests" : "Your practice tests"}</h2>
+          <h2 className="mt-8 font-semibold text-slate-900">
+            {tab === "mock" ? "Your mock tests" : "Your practice tests"}
+            {subject !== "all" ? ` - ${subject}` : ""}
+          </h2>
           <p className="text-xs text-slate-500">Tap a test to see marks by subject and chapter.</p>
           <div className="mt-3 space-y-3">
             {tests.map((t) => {
