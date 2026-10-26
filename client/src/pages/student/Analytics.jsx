@@ -186,9 +186,12 @@ export default function Analytics() {
         bySubject.set(s.name, x);
       })
     );
-    const subjects = [...bySubject.values()].map((s) => ({ ...s, accuracy: s.attempted ? (s.correct / s.attempted) * 100 : 0 }));
+    const subjects = subjectNames
+      .filter((n) => bySubject.has(n))
+      .map((n) => bySubject.get(n))
+      .map((s) => ({ ...s, accuracy: s.attempted ? (s.correct / s.attempted) * 100 : 0 }));
     return { attempted, correct, avg, best, accuracy: attempted ? (correct / attempted) * 100 : 0, subjects };
-  }, [tests]);
+  }, [tests, subjectNames]);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
