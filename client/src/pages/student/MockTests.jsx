@@ -124,7 +124,7 @@ export default function MockTests() {
                                         </li>
                                     ))}
                                 </ul>
-                                <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                                <div className="mt-auto pt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
                                     <span>{total(p)} questions</span>
                                     <span>{hours(p.minutes)}</span>
                                     <span>
