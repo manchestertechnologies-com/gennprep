@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import AuthShell from "../../components/AuthShell";
 import { getErrorMessage } from "../../api/axios";
 
 const inputClass =
@@ -36,8 +37,7 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 w-full max-w-md">
+        <AuthShell>
                 <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
                 <p className="text-slate-500 mt-1">Log in to continue your preparation</p>
 
@@ -79,7 +79,6 @@ export default function Login() {
                         Create an account
                     </Link>
                 </p>
-            </div>
-        </div>
+            </AuthShell>
     );
 }

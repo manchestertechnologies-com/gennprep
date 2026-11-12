@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { PageHeader } from "../../components/ui";
 import api, { getErrorMessage } from "../../api/axios";
 
 const DIFFICULTIES = [
@@ -156,8 +157,7 @@ export default function PracticeSetup() {
     return (
         <div className="bg-slate-50">
             <main className="max-w-3xl mx-auto px-4 py-8">
-                <h1 className="text-2xl font-bold text-slate-900">Practice {examCode}</h1>
-                <p className="text-slate-500 mt-1">Pick one or more chapters, the concepts you want, and how many questions.</p>
+                <PageHeader eyebrow={`${examCode} practice`} title="Practice" subtitle="Pick one or more chapters, the concepts you want, and how many questions." />
 
                 {error && <div className="mt-5 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-3">{error}</div>}
 

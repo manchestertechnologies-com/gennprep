@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import AuthShell from "../../components/AuthShell";
 import { getErrorMessage } from "../../api/axios";
 
 export default function Register() {
@@ -44,8 +45,7 @@ export default function Register() {
         "w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500";
 
     return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 w-full max-w-md">
+        <AuthShell>
                 <h1 className="text-2xl font-bold text-slate-900">Create your account</h1>
                 <p className="text-slate-500 mt-1">Start preparing for NEET, JEE or KCET</p>
 
@@ -98,7 +98,6 @@ export default function Register() {
                         Log in
                     </Link>
                 </p>
-            </div>
-        </div>
+            </AuthShell>
     );
 }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import AuthShell from "../../components/AuthShell";
 import api, { getErrorMessage } from "../../api/axios";
 
 const inputClass =
@@ -53,8 +54,7 @@ export default function ForgotPassword() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 w-full max-w-md">
+        <AuthShell>
                 <h1 className="text-2xl font-bold text-slate-900">Reset your password</h1>
                 <p className="text-slate-500 mt-1">
                     {step === "email"
@@ -126,7 +126,6 @@ export default function ForgotPassword() {
                         Back to log in
                     </Link>
                 </p>
-            </div>
-        </div>
+            </AuthShell>
     );
 }

@@ -40,7 +40,7 @@ export default function AdminDashboard() {
                         const box = (
                             <div className="bg-white rounded-xl border border-slate-200 p-5 h-full hover:border-indigo-300">
                                 <p className="text-sm text-slate-500">{t.label}</p>
-                                <p className="text-3xl font-bold text-slate-900 mt-1">{data[t.key]}</p>
+                                <p className="text-3xl font-bold text-slate-900 mt-1">{Number(data[t.key] || 0).toLocaleString("en-IN")}</p>
                             </div>
                         );
                         return t.to ? (

@@ -37,10 +37,10 @@ function StatCard({ label, value, hint, icon, tone }) {
 export function StatsRow({ totals, streak }) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
-      <StatCard icon="solved" tone="bg-indigo-50 text-indigo-600" label="Questions solved" value={totals.attempted} hint={`${totals.correct} correct`} />
-      <StatCard icon="accuracy" tone="bg-emerald-50 text-emerald-600" label="Accuracy" value={`${totals.accuracy}%`} hint="correct out of attempted" />
-      <StatCard icon="streak" tone="bg-orange-50 text-orange-500" label="Streak" value={`${streak.current} ${streak.current === 1 ? "day" : "days"}`} hint={`Longest: ${streak.longest} days`} />
-      <StatCard icon="tests" tone="bg-violet-50 text-violet-600" label="Tests taken" value={totals.testsTaken} hint={`${formatTime(totals.timeSec)} practised`} />
+      <StatCard icon="solved" tone="bg-[#fbf5e7] text-[#8f6215]" label="Questions solved" value={totals.attempted} hint={`${totals.correct} correct`} />
+      <StatCard icon="accuracy" tone="bg-[#fbf5e7] text-[#8f6215]" label="Accuracy" value={`${Math.round((totals.accuracy || 0) * 10) / 10}%`} hint="correct out of attempted" />
+      <StatCard icon="streak" tone="bg-[#fbf5e7] text-[#8f6215]" label="Streak" value={`${streak.current} ${streak.current === 1 ? "day" : "days"}`} hint={`Longest: ${streak.longest} days`} />
+      <StatCard icon="tests" tone="bg-[#fbf5e7] text-[#8f6215]" label="Tests taken" value={totals.testsTaken} hint={`${formatTime(totals.timeSec)} practised`} />
     </div>
   );
 }

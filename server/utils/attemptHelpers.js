@@ -34,6 +34,7 @@ const buildReview = (attempt, questionsById, extra = {}) => ({
             selectedOptionIds: a.selectedOptionIds,
             correctOptionIds: a.correctOptionIds,
             numericalValue: a.numericalValue,
+            correctNumericalValue: q && q.type === "numerical" ? q.numericalAnswer?.value ?? null : null,
             markedForReview: a.markedForReview,
             isCorrect: a.isCorrect,
             marksAwarded: a.marksAwarded,

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import ThemeToggle from "./ThemeToggle";
 
 const LINKS = [
   { to: "/admin", label: "Overview", end: true, icon: "M3 11l9-7 9 7M5 10v10h5v-6h4v6h5V10" },
@@ -50,7 +49,6 @@ function Sidebar({ onNavigate }) {
             {(user?.name || "?").trim().split(/\s+/).slice(0, 2).map((w) => w[0].toUpperCase()).join("")}
           </span>
           <span className="min-w-0 flex-1 truncate text-sm text-slate-700">{user?.name}</span>
-          <ThemeToggle />
         </div>
         <button onClick={logout} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
           Log out

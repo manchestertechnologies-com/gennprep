@@ -4,7 +4,6 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import "./index.css";
-/* old dark mode: import "./dark.css"; */
 import App from "./App.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import WakeUpBanner from "./components/WakeUpBanner.jsx";
@@ -24,5 +23,4 @@ createRoot(document.getElementById("root")).render(
 );
 import "./fonts.css";
 import "./theme.css";
-document.documentElement.classList.remove("dark");
 import "./loader";

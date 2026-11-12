@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { PageHeader } from "../../components/ui";
 import api, { getErrorMessage } from "../../api/axios";
 
 // The real paper pattern (the server uses the same numbers)
@@ -68,9 +69,8 @@ export default function MockTests() {
 
     return (
         <div className="bg-slate-50">
-            <main className="max-w-5xl mx-auto px-4 py-8">
-                <h1 className="text-2xl font-bold text-slate-900">Mock tests</h1>
-                <p className="text-slate-500 mt-1">Pick an exam and get a full-length test made just for you, with the real pattern and timer.</p>
+            <main className="max-w-6xl mx-auto px-4 py-6 md:py-8">
+                <PageHeader eyebrow="Full-length tests" title="Mock tests" subtitle="Pick an exam and get a full test made just for you, with the real pattern and timer." />
 
                 {error && <div className="mt-5 rounded-lg bg-red-50 text-red-700 text-sm px-4 py-3">{error}</div>}
 

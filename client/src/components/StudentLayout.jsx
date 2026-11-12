@@ -2,7 +2,6 @@ import { Link, NavLink, Navigate, Outlet } from "react-router-dom";
 import { choiceKey } from "../pages/student/Welcome";
 import { useAuth } from "../context/AuthContext";
 import { ExamProvider, useExam } from "../context/ExamContext";
-import ThemeToggle from "./ThemeToggle";
 
 const LINKS = [
   { to: "/dashboard", label: "Dashboard", icon: "M3 11l9-7 9 7M5 10v10h5v-6h4v6h5V10" },
@@ -99,7 +98,6 @@ function Shell() {
                 <span className="block text-xs text-slate-500">View profile</span>
               </span>
             </Link>
-            <ThemeToggle />
           </div>
           <button onClick={logout} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
             Log out
@@ -115,7 +113,6 @@ function Shell() {
             {false && user.role === "admin" && (
               <Link to="/admin" className="hidden sm:block rounded-lg px-2 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100">Admin</Link>
             )}
-            <ThemeToggle />
             <ExamPicker />
             <Link to="/profile" title="My profile" className="grid h-8 w-8 place-items-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">
               {initials(user.name)}

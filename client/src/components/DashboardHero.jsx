@@ -24,12 +24,12 @@ function GoalRing({ done, goal }) {
   return (
     <div className="relative w-24 h-24 shrink-0">
       <svg viewBox="0 0 80 80" className="w-full h-full -rotate-90">
-        <circle cx="40" cy="40" r={r} fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="7" />
-        {filled > 0 && <circle cx="40" cy="40" r={r} fill="none" stroke="#fff" strokeWidth="7" strokeLinecap="round" strokeDasharray={`${filled} ${c}`} />}
+        <circle cx="40" cy="40" r={r} fill="none" stroke="rgba(229,195,114,0.18)" strokeWidth="7" />
+        {filled > 0 && <circle cx="40" cy="40" r={r} fill="none" stroke="#e5c372" strokeWidth="7" strokeLinecap="round" strokeDasharray={`${filled} ${c}`} />}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
-        <span className="text-xl font-extrabold leading-none">{done}</span>
-        <span className="text-[11px] opacity-80">of {goal}</span>
+        <span className="text-xl font-extrabold leading-none text-[#f2d68e]">{done}</span>
+        <span className="text-[11px] text-[#cbbf9f]">of {goal}</span>
       </div>
     </div>
   );
@@ -51,34 +51,34 @@ export function WelcomeBanner({ name, examCode, today }) {
   const firstName = first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
 
   return (
-    <section className="rounded-2xl bg-linear-to-br from-indigo-600 via-indigo-600 to-violet-600 p-6 md:p-8 text-white shadow-lg shadow-indigo-200 flex flex-col md:flex-row md:items-center gap-6">
+    <section className="relative overflow-hidden rounded-2xl border border-[#b8862b]/60 bg-[#17140f] bg-[radial-gradient(600px_260px_at_90%_-20%,rgba(229,195,114,0.18),transparent_60%)] p-6 md:p-8 text-[#f7f3ea] shadow-[0_18px_40px_-24px_rgba(23,20,15,0.8)] flex flex-col md:flex-row md:items-center gap-6">
       <div className="flex-1">
-        <p className="text-sm font-medium text-indigo-100">{examCode} preparation</p>
-        <h1 className="mt-1 text-2xl md:text-3xl font-extrabold">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#e5c372]">{examCode} preparation</p>
+        <h1 className="mt-2 text-2xl md:text-3xl font-extrabold text-[#fffdf8]">
           {greeting()}, {firstName}
         </h1>
-        <p className="mt-2 text-indigo-100">
+        <p className="mt-2 text-[#cbbf9f]">
           {done >= goal ? "You reached today's goal. Great work!" : `${goal - done} more questions to reach today's goal.`}
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
-          <Link to="/practice" className="rounded-lg bg-white text-indigo-700 text-sm font-semibold px-5 py-2.5 hover:bg-indigo-50">
+          <Link to="/practice" className="rounded-lg bg-[#e5c372] text-[#17140f] text-sm font-semibold px-5 py-2.5 hover:bg-[#f2d68e]">
             Start practice
           </Link>
-          <Link to="/mock-tests" className="rounded-lg border border-white/40 text-white text-sm font-semibold px-5 py-2.5 hover:bg-white/10">
+          <Link to="/mock-tests" className="rounded-lg border border-[#e5c372]/50 text-[#f2d68e] text-sm font-semibold px-5 py-2.5 hover:bg-[#e5c372]/10">
             Take a mock test
           </Link>
         </div>
       </div>
-      <div className="flex items-center gap-4 rounded-xl bg-white/10 px-5 py-4">
+      <div className="flex items-center gap-4 rounded-xl border border-[#e5c372]/20 bg-[#e5c372]/[0.06] px-5 py-4">
         <GoalRing done={done} goal={goal} />
         <div>
-          <p className="font-semibold">Today's goal</p>
-          <p className="text-xs text-indigo-100">questions per day</p>
+          <p className="font-semibold text-[#fffdf8]">Today's goal</p>
+          <p className="text-xs text-[#cbbf9f]">questions per day</p>
           <select
             value={goal}
             onChange={(e) => changeGoal(Number(e.target.value))}
             aria-label="Daily goal"
-            className="mt-2 rounded-md bg-white/20 px-2 py-1 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white"
+            className="mt-2 rounded-md border border-[#e5c372]/40 !bg-[#26211a] px-2 py-1 text-sm !text-[#f2d68e] focus:outline-none"
           >
             {GOALS.map((g) => (
               <option key={g} value={g} className="text-slate-900">
@@ -93,10 +93,10 @@ export function WelcomeBanner({ name, examCode, today }) {
 }
 
 const ACTIONS = [
-  { to: "/practice", label: "Practice", text: "Chapter-wise questions", icon: "M5 4h11l3 3v13H5zM9 10h6M9 14h6", tone: "bg-indigo-50 text-indigo-600" },
-  { to: "/mock-tests", label: "Mock tests", text: "Timed full tests", icon: "M12 7v5l3 2M12 3a9 9 0 100 18 9 9 0 000-18z", tone: "bg-amber-50 text-amber-600" },
-  { to: "/revise", label: "Revise", text: "Your mistakes", icon: "M4 4v6h6M20 20v-6h-6M5.5 15a7.5 7.5 0 0013.5 2M18.5 9A7.5 7.5 0 005 7", tone: "bg-red-50 text-red-600", badge: true },
-  { to: "/analytics", label: "Analytics", text: "See your progress", icon: "M4 20V10M10 20V4M16 20v-6M2 20h20", tone: "bg-emerald-50 text-emerald-600" },
+  { to: "/practice", label: "Practice", text: "Chapter-wise questions", icon: "M5 4h11l3 3v13H5zM9 10h6M9 14h6", tone: "bg-[#fbf5e7] text-[#8f6215]" },
+  { to: "/mock-tests", label: "Mock tests", text: "Timed full tests", icon: "M12 7v5l3 2M12 3a9 9 0 100 18 9 9 0 000-18z", tone: "bg-[#fbf5e7] text-[#8f6215]" },
+  { to: "/revise", label: "Revise", text: "Your mistakes", icon: "M4 4v6h6M20 20v-6h-6M5.5 15a7.5 7.5 0 0013.5 2M18.5 9A7.5 7.5 0 005 7", tone: "bg-[#fbf5e7] text-[#8f6215]", badge: true },
+  { to: "/analytics", label: "Analytics", text: "See your progress", icon: "M4 20V10M10 20V4M16 20v-6M2 20h20", tone: "bg-[#fbf5e7] text-[#8f6215]" },
 ];
 
 // 4 big cards to jump to the main areas

@@ -36,6 +36,21 @@ export default function ReviewCard({ item, isBookmarked, onBookmark }) {
         <img key={img.url} src={img.url} alt={img.alt || "Question diagram"} className="mt-3 max-h-64 rounded-lg border border-slate-200" />
       ))}
 
+      {item.options.length === 0 && (
+        <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          <div className={`rounded-xl border-2 px-4 py-3 ${item.isCorrect ? "border-emerald-500 bg-emerald-50" : item.numericalValue === undefined || item.numericalValue === null ? "border-slate-200" : "border-red-500 bg-red-50"}`}>
+            <p className="text-xs font-medium text-slate-500">Your answer</p>
+            <p className="mt-0.5 font-semibold text-slate-900">{item.numericalValue === undefined || item.numericalValue === null ? "Not answered" : item.numericalValue}</p>
+          </div>
+          {item.correctNumericalValue !== undefined && item.correctNumericalValue !== null && (
+            <div className="rounded-xl border-2 border-emerald-500 bg-emerald-50 px-4 py-3">
+              <p className="text-xs font-medium text-emerald-700">Correct answer</p>
+              <p className="mt-0.5 font-semibold text-slate-900">{item.correctNumericalValue}</p>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="mt-4 space-y-2">
         {item.options.map((opt) => {
           const isCorrect = correctIds.includes(opt.id);

@@ -34,7 +34,7 @@ export default function Profile() {
   const badges = [exam?.code, CLASS_TEXT[profile.classLevel], profile.targetYear && `Target ${profile.targetYear}`].filter(Boolean);
   const tiles = stats && [
     { label: "Questions solved", value: stats.totals.attempted },
-    { label: "Accuracy", value: `${stats.totals.accuracy}%` },
+    { label: "Accuracy", value: `${Math.round((stats.totals.accuracy || 0) * 10) / 10}%` },
     { label: "Streak", value: `${stats.streak.current} days` },
     { label: "Tests taken", value: stats.totals.testsTaken },
   ];
@@ -42,7 +42,7 @@ export default function Profile() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 md:py-8">
       <section className="overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-sm">
-        <div className="h-24 bg-linear-to-r from-indigo-600 to-violet-600" />
+        <div className="h-24 border-b border-[#b8862b]/50 bg-[#17140f] bg-[radial-gradient(500px_200px_at_85%_-30%,rgba(229,195,114,0.22),transparent_60%)]" />
         <div className="px-6 pb-6 flex flex-col sm:flex-row sm:items-start gap-4">
           <div className="-mt-10 shrink-0 grid h-20 w-20 place-items-center rounded-full border-4 border-white bg-indigo-100 text-2xl font-extrabold text-indigo-700 shadow">
             {initials(profile.name)}

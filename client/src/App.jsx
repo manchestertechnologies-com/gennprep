@@ -1,6 +1,7 @@
+import { Suspense, lazy } from "react";
+import { AppLoading } from "./components/Skeleton";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/student/Profile";
-import BulkUpload from "./pages/admin/BulkUpload";
 import Analytics from "./pages/student/Analytics";
 import Welcome from "./pages/student/Welcome";
 import { ExamProvider } from "./context/ExamContext";
@@ -19,12 +20,15 @@ import TestScreen from "./pages/student/TestScreen";
 import Result from "./pages/student/Result";
 import Revise from "./pages/student/Revise";
 import MockTests from "./pages/student/MockTests";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import ManageSyllabus from "./pages/admin/ManageSyllabus";
-import ManageQuestions from "./pages/admin/ManageQuestions";
-import QuestionForm from "./pages/admin/QuestionForm";
-import ManageTests from "./pages/admin/ManageTests";
-import ManageStudents from "./pages/admin/ManageStudents";
+
+// Admin pages load only when an admin opens them (keeps the student app fast)
+const BulkUpload = lazy(() => import("./pages/admin/BulkUpload"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const ManageSyllabus = lazy(() => import("./pages/admin/ManageSyllabus"));
+const ManageQuestions = lazy(() => import("./pages/admin/ManageQuestions"));
+const QuestionForm = lazy(() => import("./pages/admin/QuestionForm"));
+const ManageTests = lazy(() => import("./pages/admin/ManageTests"));
+const ManageStudents = lazy(() => import("./pages/admin/ManageStudents"));
 
 const protect = (page) => <ProtectedRoute>{page}</ProtectedRoute>;
 const adminOnly = (page) => <AdminRoute>{page}</AdminRoute>;
@@ -37,6 +41,7 @@ function Home() {
 
 export default function App() {
   return (
+    <Suspense fallback={<AppLoading />}>
     <Routes>
       <Route path="/" element={<Landing loggedIn={protect(<Home />)} />} />
 
@@ -72,5 +77,6 @@ export default function App() {
       {/* Any unknown URL goes back to the start */}
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </Suspense>
   );
 }

@@ -3,111 +3,128 @@ import { Link } from "react-router-dom";
 import api, { getErrorMessage } from "../../api/axios";
 import { useExam } from "../../context/ExamContext";
 import { Bone } from "../../components/Skeleton";
+import { Bar, Card, CardTitle, Chip, EmptyBlock, Icon, PageHeader, Pct, Segmented, StatTile } from "../../components/ui";
+import { ICONS, cx, minutes, round1, shortDate, toneText, when } from "../../components/uiHelpers";
 
-const TABS = [
-  { key: "practice", label: "Practice" },
-  { key: "mock", label: "Mock tests" },
-];
-
-const tone = (p) => (p >= 75 ? "text-emerald-600 bg-emerald-50" : p >= 50 ? "text-amber-700 bg-amber-50" : "text-red-600 bg-red-50");
-const barTone = (p) => (p >= 75 ? "bg-emerald-500" : p >= 50 ? "bg-amber-500" : "bg-red-500");
-const round = (n) => Math.round((n || 0) * 10) / 10;
-const when = (d) => new Date(d).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-const mins = (s) => {
-  const m = Math.round((s || 0) / 60);
-  return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`;
+const SUBJECT_ORDER = ["physics", "chemistry", "biology", "mathematics", "maths"];
+const rank = (name) => {
+  const i = SUBJECT_ORDER.indexOf(String(name).toLowerCase());
+  return i < 0 ? 99 : i;
 };
 
-function Tile({ label, value, sub }) {
+// Score of the last tests as a small line chart (oldest on the left)
+function Trend({ tests }) {
+  const points = [...tests].slice(0, 12).reverse();
+  if (points.length < 2) {
+    return <p className="mt-6 text-sm text-slate-500">Take at least two tests to see your trend.</p>;
+  }
+  const W = 560, H = 190, L = 34, R = 12, T = 14, B = 26;
+  const x = (i) => L + (i * (W - L - R)) / (points.length - 1);
+  const y = (v) => T + (1 - Math.min(Math.max(v, 0), 100) / 100) * (H - T - B);
+  const line = points.map((p, i) => `${i ? "L" : "M"}${x(i)},${y(p.percentage || 0)}`).join(" ");
+  const area = `${line} L${x(points.length - 1)},${y(0)} L${x(0)},${y(0)} Z`;
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4">
-      <p className="text-xs font-medium text-slate-500">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-slate-900">{value}</p>
-      {sub && <p className="mt-0.5 text-xs text-slate-400">{sub}</p>}
-    </div>
-  );
-}
-
-function Bar({ value }) {
-  return (
-    <div className="h-2 w-full rounded-full bg-slate-100">
-      <div className={`h-2 rounded-full ${barTone(value)}`} style={{ width: `${Math.max(Math.min(value, 100), 2)}%` }} />
-    </div>
+    <svg viewBox={`0 0 ${W} ${H}`} className="mt-4 w-full" role="img" aria-label="Score trend">
+      <defs>
+        <linearGradient id="trendFill" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor="#b8862b" stopOpacity="0.28" />
+          <stop offset="100%" stopColor="#b8862b" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {[0, 50, 100].map((v) => (
+        <g key={v}>
+          <line x1={L} x2={W - R} y1={y(v)} y2={y(v)} stroke="#e7dcc3" strokeDasharray={v ? "4 4" : ""} />
+          <text x={L - 8} y={y(v) + 4} textAnchor="end" fontSize="11" fill="#7a6e5b">{v}</text>
+        </g>
+      ))}
+      <path d={area} fill="url(#trendFill)" />
+      <path d={line} fill="none" stroke="#17140f" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+      {points.map((p, i) => (
+        <g key={p.attemptId}>
+          <circle cx={x(i)} cy={y(p.percentage || 0)} r="4.5" fill="#e5c372" stroke="#17140f" strokeWidth="2">
+            <title>{`${p.title}, ${shortDate(p.date)}: ${round1(p.percentage)}%`}</title>
+          </circle>
+        </g>
+      ))}
+      <text x={L} y={H - 6} fontSize="11" fill="#7a6e5b">{shortDate(points[0].date)}</text>
+      <text x={W - R} y={H - 6} fontSize="11" fill="#7a6e5b" textAnchor="end">{shortDate(points[points.length - 1].date)}</text>
+    </svg>
   );
 }
 
 // Marks of one test, split by subject and by chapter
 function TestDetail({ test }) {
+  const facts = [
+    ["Correct", test.correct, "text-emerald-700"],
+    ["Wrong", test.incorrect, "text-red-700"],
+    ["Skipped", test.unanswered, "text-slate-600"],
+    ["Accuracy", `${round1(test.accuracy)}%`, "text-slate-900"],
+    ["Time", minutes(test.timeTakenSec), "text-slate-900"],
+  ];
   return (
-    <div className="border-t border-slate-100 px-4 pb-5 pt-4 md:px-5">
-      <div className="grid grid-cols-3 gap-3 text-center sm:grid-cols-5">
-        <div className="rounded-xl bg-slate-50 py-2"><p className="text-xs text-slate-500">Correct</p><p className="font-bold text-emerald-600">{test.correct}</p></div>
-        <div className="rounded-xl bg-slate-50 py-2"><p className="text-xs text-slate-500">Wrong</p><p className="font-bold text-red-600">{test.incorrect}</p></div>
-        <div className="rounded-xl bg-slate-50 py-2"><p className="text-xs text-slate-500">Skipped</p><p className="font-bold text-slate-600">{test.unanswered}</p></div>
-        <div className="rounded-xl bg-slate-50 py-2"><p className="text-xs text-slate-500">Accuracy</p><p className="font-bold text-slate-900">{round(test.accuracy)}%</p></div>
-        <div className="col-span-2 rounded-xl bg-slate-50 py-2 sm:col-span-1"><p className="text-xs text-slate-500">Time</p><p className="font-bold text-slate-900">{mins(test.timeTakenSec)}</p></div>
-      </div>
+    <div className="border-t border-slate-200 bg-slate-50/60 px-4 pb-5 pt-4 md:px-6">
+      <dl className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+        {facts.map(([k, v, c]) => (
+          <div key={k} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-center">
+            <dt className="text-[11px] font-medium text-slate-500">{k}</dt>
+            <dd className={cx("font-bold tabular-nums", c)}>{v}</dd>
+          </div>
+        ))}
+      </dl>
 
       {test.subjects.length > 0 && (
-        <>
-          <h4 className="mt-5 text-sm font-semibold text-slate-900">Marks by subject</h4>
-          <div className="mt-2 overflow-x-auto">
-            <table className="w-full min-w-[480px] text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 text-left text-xs text-slate-500">
-                  <th className="py-2 pr-3 font-medium">Subject</th>
-                  <th className="py-2 pr-3 text-right font-medium">Marks</th>
-                  <th className="py-2 pr-3 text-right font-medium">Correct</th>
-                  <th className="py-2 pr-3 text-right font-medium">Wrong</th>
-                  <th className="py-2 pr-3 text-right font-medium">Skipped</th>
-                  <th className="py-2 text-right font-medium">Accuracy</th>
+        <div className="mt-5 overflow-x-auto">
+          <table className="w-full min-w-[460px] text-sm">
+            <thead>
+              <tr className="border-b border-slate-200 text-left text-xs text-slate-500">
+                <th className="py-2 pr-3 font-medium">Subject</th>
+                <th className="py-2 pr-3 text-right font-medium">Marks</th>
+                <th className="py-2 pr-3 text-right font-medium">Correct</th>
+                <th className="py-2 pr-3 text-right font-medium">Wrong</th>
+                <th className="py-2 pr-3 text-right font-medium">Skipped</th>
+                <th className="py-2 text-right font-medium">Accuracy</th>
+              </tr>
+            </thead>
+            <tbody>
+              {test.subjects.map((s) => (
+                <tr key={s.name} className="border-b border-slate-100 last:border-0">
+                  <td className="py-2.5 pr-3 font-medium text-slate-800">{s.name}</td>
+                  <td className="py-2.5 pr-3 text-right font-semibold tabular-nums text-slate-900">{s.score}</td>
+                  <td className="py-2.5 pr-3 text-right tabular-nums text-emerald-700">{s.correct}</td>
+                  <td className="py-2.5 pr-3 text-right tabular-nums text-red-700">{s.incorrect}</td>
+                  <td className="py-2.5 pr-3 text-right tabular-nums text-slate-500">{s.unanswered}</td>
+                  <td className="py-2.5 text-right"><Pct value={s.accuracy} /></td>
                 </tr>
-              </thead>
-              <tbody>
-                {test.subjects.map((s) => (
-                  <tr key={s.name} className="border-b border-slate-100 last:border-0">
-                    <td className="py-2.5 pr-3 font-medium text-slate-800">{s.name}</td>
-                    <td className="py-2.5 pr-3 text-right font-semibold text-slate-900">{s.score}</td>
-                    <td className="py-2.5 pr-3 text-right text-emerald-600">{s.correct}</td>
-                    <td className="py-2.5 pr-3 text-right text-red-600">{s.incorrect}</td>
-                    <td className="py-2.5 pr-3 text-right text-slate-500">{s.unanswered}</td>
-                    <td className="py-2.5 text-right">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${tone(s.accuracy)}`}>{round(s.accuracy)}%</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {test.chapters.length > 0 && (
         <>
-          <h4 className="mt-5 text-sm font-semibold text-slate-900">Chapters</h4>
-          <ul className="mt-2 space-y-3">
+          <h4 className="mt-5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Chapters</h4>
+          <ul className="mt-2 grid gap-x-8 gap-y-3 md:grid-cols-2">
             {test.chapters.map((c) => (
               <li key={c.subject + c.name}>
                 <div className="flex items-baseline justify-between gap-3 text-sm">
-                  <span className="min-w-0 truncate text-slate-800">
+                  <span className="min-w-0 truncate text-slate-800" title={c.name}>
                     {c.name}
-                    <span className="ml-2 text-xs text-slate-400">{c.subject}</span>
+                    <span className="ml-1.5 text-xs text-slate-400">{c.subject}</span>
                   </span>
-                  <span className="shrink-0 text-xs text-slate-500">
-                    {c.correct}/{c.attempted} correct - <b className="text-slate-800">{round(c.accuracy)}%</b>
+                  <span className="shrink-0 text-xs tabular-nums text-slate-500">
+                    {c.correct}/{c.attempted} <b className={toneText(c.accuracy)}>{round1(c.accuracy)}%</b>
                   </span>
                 </div>
-                <div className="mt-1.5">
-                  <Bar value={c.accuracy} />
-                </div>
+                <Bar value={c.accuracy} className="mt-1.5" />
               </li>
             ))}
           </ul>
         </>
       )}
 
-      <Link to={`/result/${test.attemptId}`} className="mt-5 inline-block text-sm font-semibold text-indigo-600 hover:underline">
-        See every question and answer &rarr;
+      <Link to={`/result/${test.attemptId}`} className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-700 hover:underline">
+        Review every question <Icon d={ICONS.arrow} className="h-4 w-4" />
       </Link>
     </div>
   );
@@ -123,31 +140,24 @@ export default function Analytics() {
 
   useEffect(() => {
     if (!examId) return;
-    TABS.forEach((t) =>
+    ["practice", "mock"].forEach((mode) =>
       api
-        .get("/progress/history", { params: { examId, mode: t.key } })
-        .then((res) => setData((d) => ({ ...d, [t.key]: res.data.tests })))
+        .get("/progress/history", { params: { examId, mode } })
+        .then((res) => setData((d) => ({ ...d, [mode]: res.data.tests })))
         .catch((err) => setError(getErrorMessage(err)))
     );
   }, [examId]);
 
   const allTests = data[tab];
 
-  // Subject buttons (Physics, Chemistry, Biology, Maths) found in these tests
-  const ORDER = ["physics", "chemistry", "biology", "mathematics", "maths"];
   const subjectNames = useMemo(() => {
     const names = [...new Set((allTests || []).flatMap((t) => t.subjects.map((s) => s.name)))];
-    const rank = (n) => {
-      const i = ORDER.indexOf(n.toLowerCase());
-      return i < 0 ? 99 : i;
-    };
-    return names.sort((x, y) => rank(x) - rank(y) || x.localeCompare(y));
-  }, [allTests]); // eslint-disable-line react-hooks/exhaustive-deps
+    return names.sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
+  }, [allTests]);
 
-  // With a subject chosen, each test shows only that subject's marks
+  // With a subject chosen, every test shows only that subject's marks
   const tests = useMemo(() => {
-    if (!allTests) return allTests;
-    if (subject === "all") return allTests;
+    if (!allTests || subject === "all") return allTests;
     return allTests
       .map((t) => {
         const s = t.subjects.find((x) => x.name === subject);
@@ -170,13 +180,13 @@ export default function Analytics() {
       .filter(Boolean);
   }, [allTests, subject]);
 
-  // Totals and subject accuracy across all tests in this tab
   const summary = useMemo(() => {
     if (!tests || tests.length === 0) return null;
     const attempted = tests.reduce((a, t) => a + t.correct + t.incorrect, 0);
     const correct = tests.reduce((a, t) => a + t.correct, 0);
     const avg = tests.reduce((a, t) => a + (t.percentage || 0), 0) / tests.length;
     const best = Math.max(...tests.map((t) => t.percentage || 0));
+    const time = tests.reduce((a, t) => a + (t.timeTakenSec || 0), 0);
     const bySubject = new Map();
     tests.forEach((t) =>
       t.subjects.forEach((s) => {
@@ -186,151 +196,175 @@ export default function Analytics() {
         bySubject.set(s.name, x);
       })
     );
-    const subjects = subjectNames
-      .filter((n) => bySubject.has(n))
-      .map((n) => bySubject.get(n))
+    const subjects = [...bySubject.values()]
+      .sort((a, b) => rank(a.name) - rank(b.name))
       .map((s) => ({ ...s, accuracy: s.attempted ? (s.correct / s.attempted) * 100 : 0 }));
-    return { attempted, correct, avg, best, accuracy: attempted ? (correct / attempted) * 100 : 0, subjects };
-  }, [tests, subjectNames]);
+    // Weakest chapters across these tests
+    const byChapter = new Map();
+    tests.forEach((t) =>
+      t.chapters.forEach((c) => {
+        const k = c.subject + "|" + c.name;
+        const x = byChapter.get(k) || { name: c.name, subject: c.subject, correct: 0, attempted: 0 };
+        x.correct += c.correct;
+        x.attempted += c.attempted;
+        byChapter.set(k, x);
+      })
+    );
+    const weakest = [...byChapter.values()]
+      .filter((c) => c.attempted >= 3)
+      .map((c) => ({ ...c, accuracy: (c.correct / c.attempted) * 100 }))
+      .sort((a, b) => a.accuracy - b.accuracy)
+      .slice(0, 5);
+    return { attempted, correct, avg, best, time, accuracy: attempted ? (correct / attempted) * 100 : 0, subjects, weakest };
+  }, [tests]);
+
+  const kind = tab === "mock" ? "mock tests" : "practice tests";
+  const changeTab = (v) => {
+    setTab(v);
+    setOpen(null);
+    setSubject("all");
+  };
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
-      <h1 className="text-2xl font-bold text-slate-900">Analytics</h1>
-      <p className="mt-1 text-slate-500">Your {exam?.code || ""} results, test by test</p>
+    <div className="mx-auto max-w-6xl px-4 py-6 md:py-8">
+      <PageHeader eyebrow={`${exam?.code || ""} performance`} title="Analytics" subtitle="Every test you finished, with marks by subject and chapter." />
 
-      {/* Two options */}
-      <div className="mt-6 grid grid-cols-2 gap-3" role="tablist">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            role="tab"
-            aria-selected={tab === t.key}
-            onClick={() => {
-              setTab(t.key);
-              setOpen(null);
-              setSubject("all");
-            }}
-            className={`rounded-2xl border-2 px-4 py-4 text-left transition ${
-              tab === t.key ? "border-indigo-600 bg-indigo-50" : "border-slate-200 bg-white hover:border-slate-300"
-            }`}
-          >
-            <span className={`block text-base font-bold ${tab === t.key ? "text-indigo-700" : "text-slate-900"}`}>{t.label}</span>
-            <span className="block text-xs text-slate-500">{data[t.key] ? `${data[t.key].length} tests taken` : "Loading..."}</span>
-          </button>
-        ))}
+      <div className="mt-6 max-w-xl">
+        <Segmented
+          label="Kind of test"
+          value={tab}
+          onChange={changeTab}
+          options={[
+            { value: "practice", label: "Practice", hint: data.practice ? `${data.practice.length} tests` : "Loading..." },
+            { value: "mock", label: "Mock tests", hint: data.mock ? `${data.mock.length} tests` : "Loading..." },
+          ]}
+        />
       </div>
 
-      {/* Subject buttons */}
-      {subjectNames.length > 0 && (
+      {subjectNames.length > 1 && (
         <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Subject">
-          {["all", ...subjectNames].map((name) => (
-            <button
-              key={name}
-              onClick={() => {
-                setSubject(name);
-                setOpen(null);
-              }}
-              className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition ${
-                subject === name ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-300 text-slate-600 hover:border-slate-400"
-              }`}
-            >
-              {name === "all" ? "All subjects" : name}
-            </button>
+          {["all", ...subjectNames].map((n) => (
+            <Chip key={n} active={subject === n} onClick={() => { setSubject(n); setOpen(null); }}>
+              {n === "all" ? "All subjects" : n}
+            </Chip>
           ))}
         </div>
       )}
 
-      {error && <div className="mt-5 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+      {error && <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
 
       {!tests && !error && (
-        <div className="mt-6 space-y-3">
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">{[0, 1, 2, 3].map((i) => <Bone key={i} className="h-20" />)}</div>
-          <Bone className="h-40" />
+        <div className="mt-6 space-y-4">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">{[0, 1, 2, 3].map((i) => <Bone key={i} className="h-24" />)}</div>
+          <Bone className="h-56" />
         </div>
       )}
 
       {tests && tests.length === 0 && (
-        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-8 text-center">
-          <p className="font-semibold text-slate-900">
-            No {tab === "mock" ? "mock tests" : "practice tests"} {subject === "all" ? "yet" : `with ${subject} yet`}
-          </p>
-          <p className="mt-1 text-sm text-slate-500">Finish one and your marks will show here.</p>
-          <Link
-            to={tab === "mock" ? "/mock-tests" : "/practice"}
-            className="mt-4 inline-block rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
-          >
-            {tab === "mock" ? "Take a mock test" : "Start practice"}
-          </Link>
+        <div className="mt-6">
+          <EmptyBlock
+            title={`No ${kind} ${subject === "all" ? "yet" : `with ${subject} yet`}`}
+            text="Finish one and your marks, accuracy and weak chapters will appear here."
+            actionLabel={tab === "mock" ? "Take a mock test" : "Start practice"}
+            actionTo={tab === "mock" ? "/mock-tests" : "/practice"}
+          />
         </div>
       )}
 
       {summary && (
         <>
           <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-            <Tile label="Tests taken" value={tests.length} />
-            <Tile label="Average score" value={`${round(summary.avg)}%`} sub={`Best ${round(summary.best)}%`} />
-            <Tile label="Accuracy" value={`${round(summary.accuracy)}%`} sub="correct of attempted" />
-            <Tile label="Questions answered" value={summary.attempted} sub={`${summary.correct} correct`} />
+            <StatTile label="Tests taken" value={tests.length} sub={`${minutes(summary.time)} spent`} />
+            <StatTile label="Average score" value={`${round1(summary.avg)}%`} sub={`Best ${round1(summary.best)}%`} />
+            <StatTile label="Accuracy" value={`${round1(summary.accuracy)}%`} sub="correct of attempted" accent={toneText(summary.accuracy)} />
+            <StatTile label="Questions answered" value={summary.attempted} sub={`${summary.correct} correct`} />
           </div>
 
-          {subject === "all" && summary.subjects.length > 0 && (
-            <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-5">
-              <h2 className="font-semibold text-slate-900">Accuracy by subject</h2>
-              <div className="mt-4 space-y-4">
-                {summary.subjects.map((s) => (
-                  <div key={s.name}>
-                    <div className="flex justify-between text-sm">
-                      <span className="font-medium text-slate-700">{s.name}</span>
-                      <span className="text-slate-500">
-                        {s.correct}/{s.attempted} - <b className="text-slate-900">{round(s.accuracy)}%</b>
-                      </span>
-                    </div>
-                    <div className="mt-1.5">
-                      <Bar value={s.accuracy} />
-                    </div>
+          <div className="mt-4 grid gap-4 lg:grid-cols-5">
+            <Card className="p-5 lg:col-span-3">
+              <CardTitle hint="Score % of your recent tests">Score trend</CardTitle>
+              <Trend tests={tests} />
+            </Card>
+            <Card className="p-5 lg:col-span-2">
+              {subject === "all" && summary.subjects.length > 1 ? (
+                <>
+                  <CardTitle hint="Correct out of attempted">Accuracy by subject</CardTitle>
+                  <div className="mt-4 space-y-4">
+                    {summary.subjects.map((s) => (
+                      <div key={s.name}>
+                        <div className="flex justify-between text-sm">
+                          <span className="font-medium text-slate-800">{s.name}</span>
+                          <span className="tabular-nums text-slate-500">{s.correct}/{s.attempted} <b className={toneText(s.accuracy)}>{round1(s.accuracy)}%</b></span>
+                        </div>
+                        <Bar value={s.accuracy} className="mt-1.5" />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          <h2 className="mt-8 font-semibold text-slate-900">
-            {tab === "mock" ? "Your mock tests" : "Your practice tests"}
-            {subject !== "all" ? ` - ${subject}` : ""}
-          </h2>
-          <p className="text-xs text-slate-500">Tap a test to see marks by subject and chapter.</p>
-          <div className="mt-3 space-y-3">
-            {tests.map((t) => {
-              const isOpen = open === t.attemptId;
-              return (
-                <article key={t.attemptId} className={`overflow-hidden rounded-2xl border bg-white ${isOpen ? "border-indigo-300" : "border-slate-200"}`}>
-                  <button
-                    onClick={() => setOpen(isOpen ? null : t.attemptId)}
-                    aria-expanded={isOpen}
-                    className="flex w-full items-center gap-3 px-4 py-4 text-left md:px-5"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium text-slate-900">{t.title}</p>
-                      <p className="mt-0.5 text-xs text-slate-400">
-                        {t.kind !== "Mock test" && t.kind !== "Practice" ? `${t.kind} - ` : ""}
-                        {when(t.date)}
-                      </p>
-                    </div>
-                    <span className="shrink-0 text-sm font-semibold text-slate-900">
-                      {t.score}/{t.maxScore}
-                    </span>
-                    <span className={`w-16 shrink-0 rounded-full px-2 py-0.5 text-center text-xs font-semibold ${tone(t.percentage || 0)}`}>
-                      {round(t.percentage)}%
-                    </span>
-                    <svg viewBox="0 0 24 24" className={`h-5 w-5 shrink-0 text-slate-400 transition ${isOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M6 9l6 6 6-6" />
-                    </svg>
-                  </button>
-                  {isOpen && <TestDetail test={t} />}
-                </article>
-              );
-            })}
+                </>
+              ) : (
+                <>
+                  <CardTitle hint="Lowest accuracy first">Chapters to work on</CardTitle>
+                  {summary.weakest.length === 0 ? (
+                    <p className="mt-4 text-sm text-slate-500">Answer a few more questions per chapter to see this.</p>
+                  ) : (
+                    <ul className="mt-4 space-y-3">
+                      {summary.weakest.map((c) => (
+                        <li key={c.subject + c.name}>
+                          <div className="flex items-baseline justify-between gap-3 text-sm">
+                            <span className="min-w-0 truncate text-slate-800" title={c.name}>{c.name}</span>
+                            <b className={cx("shrink-0 text-xs tabular-nums", toneText(c.accuracy))}>{round1(c.accuracy)}%</b>
+                          </div>
+                          <Bar value={c.accuracy} className="mt-1.5" />
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </>
+              )}
+            </Card>
           </div>
+
+          <Card className="mt-4 overflow-hidden">
+            <div className="px-5 pt-5">
+              <CardTitle hint="Tap a test to see marks by subject and chapter">
+                {tab === "mock" ? "Mock test history" : "Practice history"}
+                {subject !== "all" ? ` · ${subject}` : ""}
+              </CardTitle>
+            </div>
+            <div className="mt-3 hidden grid-cols-[1fr_110px_90px_24px] gap-3 border-y border-slate-200 bg-slate-50/70 px-5 py-2 text-xs font-medium text-slate-500 sm:grid">
+              <span>Test</span>
+              <span className="text-right">Marks</span>
+              <span className="text-right">Score</span>
+              <span />
+            </div>
+            <ul className="divide-y divide-slate-200 border-t border-slate-200 sm:border-t-0">
+              {tests.map((t) => {
+                const isOpen = open === t.attemptId;
+                return (
+                  <li key={t.attemptId}>
+                    <button
+                      type="button"
+                      onClick={() => setOpen(isOpen ? null : t.attemptId)}
+                      aria-expanded={isOpen}
+                      className={cx("grid w-full grid-cols-[1fr_auto_auto_20px] items-center gap-3 px-5 py-3.5 text-left transition sm:grid-cols-[1fr_110px_90px_24px]", isOpen ? "bg-indigo-50/60" : "hover:bg-slate-50")}
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate font-medium text-slate-900">{t.title}</span>
+                        <span className="block text-xs text-slate-500">
+                          {t.mode !== "practice" && t.mode !== "mock" ? `${t.kind} · ` : ""}
+                          {when(t.date)}
+                        </span>
+                      </span>
+                      <span className="text-right text-sm font-semibold tabular-nums text-slate-900">{t.score}/{t.maxScore}</span>
+                      <span className="text-right"><Pct value={t.percentage} /></span>
+                      <Icon d={ICONS.chevron} className={cx("h-5 w-5 text-slate-400 transition", isOpen && "rotate-180")} />
+                    </button>
+                    {isOpen && <TestDetail test={t} />}
+                  </li>
+                );
+              })}
+            </ul>
+          </Card>
         </>
       )}
     </div>
