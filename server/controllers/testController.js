@@ -225,13 +225,17 @@ const PATTERNS = {
     JEE: { minutes: 180, sections: [["physics", 25], ["chemistry", 25], ["mathematics", 25]] },
     KCET_PCM: { minutes: 240, sections: [["physics", 60], ["chemistry", 60], ["mathematics", 60]] },
     KCET_PCB: { minutes: 240, sections: [["physics", 60], ["chemistry", 60], ["biology", 60]] },
+    KCET_PCMB: { minutes: 320, sections: [["physics", 60], ["chemistry", 60], ["mathematics", 60], ["biology", 60]] },
 };
 const subjectKey = (name) => {
     const k = String(name || "").toLowerCase().replace(/[^a-z]/g, "");
     return k === "maths" || k === "math" ? "mathematics" : k;
 };
 const patternFor = (code, stream) => {
-    if (code === "KCET") return { key: stream === "PCB" ? "KCET_PCB" : "KCET_PCM", label: stream === "PCB" ? "KCET (PCB)" : "KCET (PCM)" };
+    if (code === "KCET") {
+        const s = ["PCMB", "PCB"].includes(stream) ? stream : "PCM";
+        return { key: `KCET_${s}`, label: `KCET (${s})` };
+    }
     return { key: code, label: code };
 };
 

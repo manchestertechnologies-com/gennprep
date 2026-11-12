@@ -9,6 +9,7 @@ const PATTERNS = {
     JEE: { tag: "Engineering entrance", minutes: 180, parts: [["Physics", 25], ["Chemistry", 25], ["Maths", 25]] },
     KCET_PCM: { tag: "Karnataka CET", minutes: 240, parts: [["Physics", 60], ["Chemistry", 60], ["Maths", 60]] },
     KCET_PCB: { tag: "Karnataka CET", minutes: 240, parts: [["Physics", 60], ["Chemistry", 60], ["Biology", 60]] },
+    KCET_PCMB: { tag: "Karnataka CET", minutes: 320, parts: [["Physics", 60], ["Chemistry", 60], ["Maths", 60], ["Biology", 60]] },
 };
 const patternOf = (code, stream) => PATTERNS[code === "KCET" ? `KCET_${stream}` : code];
 const total = (p) => p.parts.reduce((a, [, n]) => a + n, 0);
@@ -32,7 +33,7 @@ export default function MockTests() {
     const navigate = useNavigate();
     const [exams, setExams] = useState([]);
     const [mine, setMine] = useState([]);
-    const [stream, setStream] = useState("PCM");
+    const [stream, setStream] = useState("PCMB");
     const [chosen, setChosen] = useState(null); // exam whose instructions are open
     const [starting, setStarting] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -102,7 +103,7 @@ export default function MockTests() {
 
                                 {e.code === "KCET" && (
                                     <div className="mt-3 flex gap-2" role="group" aria-label="KCET stream">
-                                        {["PCM", "PCB"].map((s) => (
+                                        {["PCMB", "PCM", "PCB"].map((s) => (
                                             <button
                                                 key={s}
                                                 type="button"
